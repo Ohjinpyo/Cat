@@ -219,7 +219,7 @@ function BackTestPage() {
     const handleExecute = () => {
         setReady(false);
         axios
-            .post("http://localhost:8080/api/test", {
+            .post("http://3.38.101.95:8080/api/test", {
                 startDate: formatDate(startDate),
                 endDate: formatDate(endDate),
                 capital: capital,
@@ -245,7 +245,7 @@ function BackTestPage() {
 
     const loadTradeLogs = () => {
         axios
-            .get("http://localhost:8080/api/trades")
+            .get("http://3.38.101.95:8080/api/trades")
             .then((response) => {
                 setTradeLogs(response.data);
                 setReady(true);
