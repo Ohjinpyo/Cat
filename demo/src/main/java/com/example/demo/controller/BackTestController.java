@@ -29,7 +29,7 @@ public class BackTestController {
         BackTestResult backTestResult = new BackTestResult();
 
         try {
-            String scriptPath = "~/ttttt/devide_bakctest2.py";
+            String scriptPath = "/home/ec2-user/ttttt/devide_bakctest2.py";
 
 
             // Python 스크립트를 실행
