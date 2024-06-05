@@ -65,7 +65,7 @@ const Chart = ({ selectedCoin }) => {
 
     const fetchData = async (year) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/data/${year}`);
+            const response = await fetch(`http://3.38.101.95:8080/api/data/${year}`);
             const data = await response.json();
             const labels = data.map(entry => entry.datetime);
             const prices = data.map(entry => entry.close);
