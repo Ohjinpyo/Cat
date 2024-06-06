@@ -83,7 +83,7 @@ const Chart = () => {
                 const data = await response.json();
 
                 const candlestickData = data.map(entry => ({
-                    time: entry.datetime,
+                    time: new Date(entry.datetime).getTime() / 1000,
                     open: entry.open,
                     high: entry.high,
                     low: entry.low,
