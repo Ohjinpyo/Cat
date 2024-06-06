@@ -99,8 +99,8 @@ async def main(stop_event):
 
     # MySQL 데이터베이스 연결 설정
     user = 'root'
-    password = '1234'
-    host = 'localhost'
+    password = 'Cat2024!!'
+    host = 'capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com:3306'
     port = '3306'
     database = 'backtest'
 
