@@ -70,7 +70,6 @@ function AutoTradingPage() {
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
                 console.log("POST 요청 성공:", response.data);
-                console.log(response.text());
                 // 서버에서 받은 JSON 데이터를 상태에 저장
                 setTradeLogs(response.data); // response.data는 JavaScript 객체임
             })

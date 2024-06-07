@@ -30,10 +30,10 @@ public class LiveTradeController {
     }
 
     @PostMapping
-    public String executePythonScript(@RequestBody RequestName request) {
+    public void executePythonScript(@RequestBody RequestName request) {
+
         String username = request.getUsername();
         User user = userService.findByUsername(userName);
-
 
         // MySQL 데이터베이스 연결 설정
         String dbuser = "root";
@@ -87,9 +87,6 @@ public class LiveTradeController {
         } catch (SQLException | IOException | InterruptedException e) {
             System.err.println("Python 스크립트 실행 중 예외 발생: " + e.getMessage());
         }
-
-        return request.getUsername();
-
 
     }
 
