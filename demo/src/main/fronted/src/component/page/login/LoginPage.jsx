@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../../UserContext";
+import { useUser } from "../../../UserContext";
 
 const Container = styled.div`
     display: flex;
