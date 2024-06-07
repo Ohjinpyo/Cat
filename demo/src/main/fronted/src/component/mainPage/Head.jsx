@@ -50,7 +50,7 @@ function Head() {
                 <NavItem to="/auto-trading">자동매매</NavItem>
             </NavLinks>
             {isLoggedIn ? (
-                <Button onClick={onLogout}>{username} Logout</Button>
+                <Button onClick={handleLogout}>{username} Logout</Button>
             ) : (
                 <div>
                     <NavItem to="/sign-up">Sign up</NavItem>

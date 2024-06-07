@@ -10,32 +10,20 @@ import AutoTradingPage from "./component/page/autoTrade/AutoTradingPage";
 import SignUpPage from "./component/page/signUp/SignUpPage";
 import LoginPage from "./component/page/login/LoginPage";
 
-import { UserContext } from './UserContext';
+import { UserProvider } from './UserContext';
 
 function App() {
     const [selectedCoin, setSelectedCoin] = useState("BTC");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [username, setUsername] = useState("");
 
     const handleCoinClick = (coinName) => {
         setSelectedCoin(coinName);
     };
 
-    const handleLogin = (username) => {
-        setIsLoggedIn(true);
-        setUsername(username);
-    };
-
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setUsername("");
-    };
-
     return (
-        <UserContext.Provider value={{ isLoggedIn, username, handleLogin, handleLogout }}>
+        <UserProvider>
             <BrowserRouter>
                 <div>
-                    <Head isLoggedIn={isLoggedIn} username={username} onLogout={handleLogout} />
+                    <Head />
                     <Routes>
                         <Route
                             path="/"
@@ -49,11 +37,11 @@ function App() {
                         <Route path='/backtest' element={<BackTestPage/>}/>
                         <Route path='/auto-trading' element={<AutoTradingPage/>}/>
                         <Route path='/sign-up' element={<SignUpPage/>}/>
-                        <Route path='/login' element={<LoginPage onLogin={handleLogin} />}/>
+                        <Route path='/login' element={<LoginPage />}/>
                     </Routes>
                 </div>
             </BrowserRouter>
-        </UserContext.Provider>
+        </UserProvider>
     );
 }
 
