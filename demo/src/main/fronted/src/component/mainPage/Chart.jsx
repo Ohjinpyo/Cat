@@ -24,7 +24,8 @@ const ChartWrapper = styled.div`
 const ButtonContainer = styled.div`
     display: flex;
     gap: 10px;
-    position: absolute;
+    position: relative;
+    top: 0px; left: 0px; //버튼위치 상대위치로 바뀜 **수정필요//
     bottom: 10px;
     right: 10px;
 `;
@@ -61,8 +62,8 @@ const Chart = () => {
 
     useEffect(() => {
         const chart = createChart("container", {
-            width: 800,
-            height: 400,
+            width: 1500,
+            height: 200,
             layout: {
                 textColor: "black",
                 backgroundColor: "#ffffff"
