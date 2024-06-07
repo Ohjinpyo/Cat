@@ -63,7 +63,7 @@ const Chart = () => {
     useEffect(() => {
         const chart = createChart("container", {
             width: 1500,
-            height: 200,
+            height: 400,
             layout: {
                 textColor: "black",
                 backgroundColor: "#ffffff"
