@@ -7,13 +7,17 @@ from dotenv import load_dotenv
 import datetime
 from aiohttp import ClientTimeout
 import mysql.connector
+import sys
 
 # .env 파일 로드
 load_dotenv()
 
 # 환경 변수 가져오기
-API_KEY = os.getenv("API_KEY")
-SECRET_KEY = os.getenv("SECRET_KEY")
+# API_KEY = os.getenv("API_KEY")
+# SECRET_KEY = os.getenv("SECRET_KEY")
+name = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 symbol = "BTC/USDT"
 timeframe = '15m'
@@ -85,11 +89,11 @@ async def fetch_and_update_data(exchange, symbol, timeframe, lookback):
     df = calculate_indicators(df)
     return df
 
-async def main(stop_event):
+async def main(userName, API_KEY, API_SECRET):
     # 15분 데이터 초기 불러오기
     exchange = ccxtpro.binance({
         'apiKey': API_KEY,
-        'secret': SECRET_KEY,
+        'secret': API_SECRET,
         'enableRateLimit': True,
         'options': {
             'defaultType': 'future'
@@ -151,7 +155,7 @@ async def main(stop_event):
     entry_price = 0
     trades_log = []
 
-    flag = 1
+    flag = True
 
     while flag:
         connection = mysql.connector.connect(
@@ -164,10 +168,12 @@ async def main(stop_event):
         cursor = connection.cursor()
 
         # flag 값 조회
-        query = "SELECT flag FROM user"
-        cursor.execute(query)
+        query = "SELECT trading FROM User WHERE username = %s"
+        cursor.execute(query, (userName,))
         all_rows = cursor.fetchall()
-        flag = all_rows[-1][0]
+
+        flag = all_rows[0][0]
+
 
         lookback = 50  # 초기 lookback 값 설정
         df = await fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
@@ -266,7 +272,7 @@ async def main(stop_event):
 
     await exchange.close()
 
-def run_trading_bot():
+def run_trading_bot(name, API_KEY, API_SECRET):
     stop_event = asyncio.Event()
 
     def stop_bot():
@@ -275,6 +281,8 @@ def run_trading_bot():
 
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, stop_bot)
-    loop.run_until_complete(main(stop_event))
+    # loop.run_until_complete(main(stop_event))
+    main(name, API_KEY, API_SECRET)
 
-run_trading_bot()
+
+run_trading_bot(name, API_KEY, API_SECRET)

@@ -13,7 +13,9 @@ import java.sql.Statement;
 @RequestMapping("/api/exit")
 public class LiveTradeExitController {
     @PostMapping
-    public void exitTrading() {
+    public void exitTrading(@RequestBody RequestName request) {
+        String username = request.getUsername();
+
         // MySQL 데이터베이스 연결 설정
         String user = "root";
         String password = "Cat2024!!";
@@ -25,7 +27,7 @@ public class LiveTradeExitController {
             Statement statement = connection.createStatement();
 
             // user 테이블의 flag 값을 0으로 업데이트
-            String updateFlagQuery = "UPDATE user SET flag = 0";
+            String updateFlagQuery = "UPDATE User SET trading = false WHERE username = '" + userName + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 데이터베이스 연결 및 리소스 닫기

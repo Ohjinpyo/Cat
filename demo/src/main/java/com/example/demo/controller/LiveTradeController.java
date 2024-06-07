@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.LiveTrade;
 import com.example.demo.service.LiveTradeService;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.model.RequestName;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +30,11 @@ public class LiveTradeController {
     }
 
     @PostMapping
-    public void executePythonScript() {
+    public void executePythonScript(@RequestBody RequestName request) {
+        String username = request.getUsername();
+        User user = userService.findByUsername(userName);
+
+
         // MySQL 데이터베이스 연결 설정
         String user = "root";
         String password = "Cat2024!!";
@@ -40,13 +45,13 @@ public class LiveTradeController {
             Connection connection = DriverManager.getConnection(url, user, password);
             Statement statement = connection.createStatement();
 
-            // user 테이블의 flag 값을 1로 업데이트
-            String updateFlagQuery = "UPDATE user SET flag = 1";
+
+            String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + userName + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 파이썬 스크립트 실행
             String pythonScriptPath = "/home/ec2-user/ttttt/test_06_07.py";
-            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath);
+            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
             Process process = processBuilder.start();
 
             // 실행 결과 출력

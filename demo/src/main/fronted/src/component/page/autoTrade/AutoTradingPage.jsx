@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Chart from "../../mainPage/Chart";
 import styled from "styled-components";
 import axios from "axios";
+import {UserContext, useUser} from '../../../UserContext';
 
 const ExeContainer = styled.div`
     width: 100%;
@@ -59,10 +60,13 @@ const LogItem = styled.div`
 
 function AutoTradingPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
+    const { username } = useUser();
 
     // 실행 버튼 클릭 시
     const handleExecute = () => {
-        axios.post("http://3.38.101.95:8080/api/livetrades")
+        axios.post("http://3.38.101.95:8080/api/livetrades",{
+            username: username
+        })
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
                 console.log("POST 요청 성공:", response.data);
