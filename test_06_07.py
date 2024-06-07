@@ -172,7 +172,7 @@ async def main(userName, API_KEY, API_SECRET):
         cursor.execute(query, (userName,))
         all_rows = cursor.fetchall()
 
-        flag = all_rows[0][0]
+        flag = bool(all_rows[0][0])
 
 
         lookback = 50  # 초기 lookback 값 설정
