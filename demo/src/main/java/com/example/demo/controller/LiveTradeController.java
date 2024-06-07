@@ -87,7 +87,8 @@ public class LiveTradeController {
         } catch (SQLException | IOException | InterruptedException e) {
             System.err.println("Python 스크립트 실행 중 예외 발생: " + e.getMessage());
         }
-        return username;
+
+        return request.getUsername();
 
 
     }
