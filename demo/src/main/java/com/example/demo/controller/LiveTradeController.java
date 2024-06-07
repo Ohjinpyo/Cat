@@ -36,13 +36,13 @@ public class LiveTradeController {
 
 
         // MySQL 데이터베이스 연결 설정
-        String user = "root";
+        String dbuser = "root";
         String password = "Cat2024!!";
         String url = "jdbc:mysql://capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com:3306/backtest";
 
         try {
             // 데이터베이스 연결
-            Connection connection = DriverManager.getConnection(url, user, password);
+            Connection connection = DriverManager.getConnection(url, dbuser, password);
             Statement statement = connection.createStatement();
 
 
@@ -87,6 +87,8 @@ public class LiveTradeController {
         } catch (SQLException | IOException | InterruptedException e) {
             System.err.println("Python 스크립트 실행 중 예외 발생: " + e.getMessage());
         }
+
+
     }
 
 }
