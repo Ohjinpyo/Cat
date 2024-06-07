@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../UserContext";
 
 const Container = styled.div`
     display: flex;
@@ -36,11 +37,12 @@ const ErrorMessage = styled.p`
     font-size: 14px;
 `;
 
-function LoginPage({ onLogin }) {
+function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const { handleLogin } = useUser();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -55,7 +57,7 @@ function LoginPage({ onLogin }) {
             });
             if (response.ok) {
                 const result = await response.json();
-                onLogin(username);
+                handleLogin(username);
                 navigate('/');
             } else {
                 const result = await response.json();

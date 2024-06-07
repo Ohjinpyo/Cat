@@ -37,7 +37,9 @@ const Button = styled.button`
     cursor: pointer;
 `;
 
-function Head({ isLoggedIn, username, onLogout }) {
+function Head() {
+    const { isLoggedIn, username, handleLogout } = useUser();
+
     return (
         <Container>
             <Title>C.A.T</Title>
@@ -47,7 +49,7 @@ function Head({ isLoggedIn, username, onLogout }) {
                 <NavItem to="/auto-trading">자동매매</NavItem>
             </NavLinks>
             {isLoggedIn ? (
-                <Button onClick={onLogout}>{username} (Logout)</Button>
+                <Button onClick={onLogout}>{username} Logout</Button>
             ) : (
                 <div>
                     <NavItem to="/sign-up">Sign up</NavItem>
