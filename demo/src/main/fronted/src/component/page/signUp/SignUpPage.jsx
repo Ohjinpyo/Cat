@@ -41,6 +41,7 @@ function SignUpPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [apikey, setApiKey] = useState("");
     const [apisecret, setApiSecret] = useState("");
+    const [trading, setTrading] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
@@ -56,7 +57,7 @@ function SignUpPage() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ username, password, apikey, apisecret })
+                body: JSON.stringify({ username, password, apikey, apisecret, trading })
             });
             const result = await response.text();
             if (response.ok) {

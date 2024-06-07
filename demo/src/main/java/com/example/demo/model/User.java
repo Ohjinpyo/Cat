@@ -21,6 +21,9 @@ public class User {
     @Column(nullable = false)
     private String apisecret;
 
+    @Column(nullable = false)
+    private boolean trading;
+
     // Getters and setters
     public Long getId() {
         return id;
@@ -61,4 +64,8 @@ public class User {
     public void setApisecret(String apisecret) {
         this.apisecret = apisecret;
     }
+
+    public boolean isTrading() { return trading; }
+
+    public void setTrading(boolean trading) { this.trading = trading; }
 }
