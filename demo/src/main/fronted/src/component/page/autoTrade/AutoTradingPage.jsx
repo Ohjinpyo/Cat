@@ -80,7 +80,9 @@ function AutoTradingPage() {
     };
 
     const handleExit = () => {
-        axios.post("http://3.38.101.95:8080/api/exit")
+        axios.post("http://3.38.101.95:8080/api/exit",{
+            username: username
+        })
             .then(response => {
                 console.log("POST 요청 성공:", response.data);
                 setTradeLogs(response.data);
