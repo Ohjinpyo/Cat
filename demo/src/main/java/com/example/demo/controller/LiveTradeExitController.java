@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.RequestName;
 
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -14,6 +15,7 @@ import java.sql.Statement;
 @RestController
 @RequestMapping("/api/exit")
 public class LiveTradeExitController {
+
     @PostMapping
     public void exitTrading(@RequestBody RequestName request) {
         String username = request.getUsername();

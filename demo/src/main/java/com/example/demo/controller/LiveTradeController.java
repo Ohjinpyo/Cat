@@ -4,6 +4,9 @@ import com.example.demo.model.LiveTrade;
 import com.example.demo.service.LiveTradeService;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.RequestName;
+import com.example.demo.model.User;
+import com.example.demo.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +22,9 @@ import java.util.List;
 @RequestMapping("/api/livetrades")
 public class LiveTradeController {
     private final LiveTradeService liveTradeService;
+
+    @Autowired
+    private UserService userService;
 
     public LiveTradeController(LiveTradeService liveTradeService) {
         this.liveTradeService = liveTradeService;
