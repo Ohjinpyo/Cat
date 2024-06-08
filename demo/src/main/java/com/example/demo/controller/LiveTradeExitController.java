@@ -31,7 +31,7 @@ public class LiveTradeExitController {
             Statement statement = connection.createStatement();
 
             // user 테이블의 flag 값을 0으로 업데이트
-            String updateFlagQuery = "UPDATE User SET trading = false WHERE username = '" + userName + "'";
+            String updateFlagQuery = "UPDATE User SET trading = false WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 데이터베이스 연결 및 리소스 닫기

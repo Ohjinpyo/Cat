@@ -39,7 +39,7 @@ public class LiveTradeController {
     public void executePythonScript(@RequestBody RequestName request) {
 
         String username = request.getUsername();
-        User user = userService.findByUsername(userName);
+        User user = userService.findByUsername(username);
 
         // MySQL 데이터베이스 연결 설정
         String dbuser = "root";
@@ -52,7 +52,7 @@ public class LiveTradeController {
             Statement statement = connection.createStatement();
 
 
-            String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + userName + "'";
+            String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 파이썬 스크립트 실행
