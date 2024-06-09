@@ -1,10 +1,9 @@
-import ccxt.pro as ccxtpro
+import ccxt
 import os
 import pandas as pd
 import talib
 from dotenv import load_dotenv
 import datetime
-from aiohttp import ClientTimeout
 import mysql.connector
 import sys
 import time
@@ -13,14 +12,9 @@ import time
 load_dotenv()
 
 # 환경 변수 가져오기
-# API_KEY = os.getenv("API_KEY")
-# SECRET_KEY = os.getenv("SECRET_KEY")
-# name = sys.argv[1]
-name = "ojp"
-# API_KEY = sys.argv[2]
-API_KEY = "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g"
-#API_SECRET = sys.argv[3]
-API_SECRET = "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr"
+name = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 symbol = "BTC/USDT"
 timeframe = '15m'
@@ -35,8 +29,9 @@ def fetch_candles(exchange, symbol, timeframe, limit):
         try:
             ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             return ohlcv
-        except ccxtpro.NetworkError as e:
+        except ccxt.NetworkError as e:
             print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
+            time.sleep(2)
     raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
 
 def calculate_indicators(df):
@@ -44,8 +39,7 @@ def calculate_indicators(df):
     df['RSI'] = talib.RSI(df['close'], timeperiod=14)
 
     # RSI의 MACD 계산
-    #rsi_macd, rsi_signal, rsi_hist = talib.MACD(df['RSI'], fastperiod=12, slowperiod=26, signalperiod=9)
-    df['RSI_Hist'] =  talib.SMA(df['RSI'], timeperiod=9)
+    df['RSI_Hist'] = talib.SMA(df['RSI'], timeperiod=9)
     
     # MACD 계산
     df['MACD'], df['MACD_signal'], df['MACD_hist'] = talib.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
@@ -90,7 +84,7 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 def main(userName, API_KEY, API_SECRET):
     # 15분 데이터 초기 불러오기
-    exchange = ccxtpro.binance({
+    exchange = ccxt.binance({
         'apiKey': API_KEY,
         'secret': API_SECRET,
         'enableRateLimit': True,
@@ -167,8 +161,8 @@ def main(userName, API_KEY, API_SECRET):
         cursor = connection.cursor()
 
         # flag 값 조회
-        query = "SELECT trading FROM User WHERE username = %s"
-        cursor.execute(query, ("ojp",))
+        query = "SELECT trading FROM user WHERE username = %s"
+        cursor.execute(query, (userName,))
         all_rows = cursor.fetchall()
 
         flag = bool(all_rows[0][0])
@@ -176,10 +170,10 @@ def main(userName, API_KEY, API_SECRET):
         connection.close()
 
         lookback = 50  # 초기 lookback 값 설정
-        df = fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
+        df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
         df = update_flags(df)
 
-        time.sleep(1)  # 10초
+        time.sleep(10)  # 10초 대기
 
         # 충분한 데이터가 쌓일 때까지 기다림
         if len(df) >= 14:  # RSI를 계산하는 데 필요한 최소 데이터 수 14
@@ -270,20 +264,5 @@ def main(userName, API_KEY, API_SECRET):
         cursor.close()
         connection.close()
 
-    exchange.close()
 
-def run_trading_bot(name, API_KEY, API_SECRET):
-    # stop_event = asyncio.Event()
-
-    # def stop_bot():
-    #     input("종료하려면 Enter 키를 누르세요...")
-    #     stop_event.set()
-    #
-    # loop = asyncio.get_event_loop()
-    # loop.run_in_executor(None, stop_bot)
-    # loop.run_until_complete(main(stop_event))
-    main(name, API_KEY, API_SECRET)
-
-
-# run_trading_bot(name, API_KEY, API_SECRET)
 main(name, API_KEY, API_SECRET)
