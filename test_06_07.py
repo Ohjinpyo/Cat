@@ -15,9 +15,12 @@ load_dotenv()
 # 환경 변수 가져오기
 # API_KEY = os.getenv("API_KEY")
 # SECRET_KEY = os.getenv("SECRET_KEY")
-name = sys.argv[1]
-API_KEY = sys.argv[2]
-API_SECRET = sys.argv[3]
+# name = sys.argv[1]
+name = "ojp"
+# API_KEY = sys.argv[2]
+API_KEY = "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g"
+#API_SECRET = sys.argv[3]
+API_SECRET = "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr"
 
 symbol = "BTC/USDT"
 timeframe = '15m'
@@ -180,7 +183,7 @@ async def main(userName, API_KEY, API_SECRET):
         df = await fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
         df = update_flags(df)
 
-        await asyncio.sleep(10)  # 10초
+        await asyncio.sleep(1)  # 10초
 
         # 충분한 데이터가 쌓일 때까지 기다림
         if len(df) >= 14:  # RSI를 계산하는 데 필요한 최소 데이터 수 14
