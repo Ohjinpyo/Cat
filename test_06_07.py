@@ -126,20 +126,8 @@ def main(userName, API_KEY, API_SECRET):
     )
     """
 
-    create_table_query_user = """
-    CREATE TABLE IF NOT EXISTS user (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        apikey VARCHAR(255),
-        apisecret VARCHAR(255),
-        password VARCHAR(255),
-        username VARCHAR(255),
-        flag INT
-    )
-    """
-
     # 테이블 생성
     cursor.execute(create_table_query_trades)
-    cursor.execute(create_table_query_user)
 
     # 커넥션 및 커서 종료
     cursor.close()
@@ -163,7 +151,7 @@ def main(userName, API_KEY, API_SECRET):
         cursor = connection.cursor()
 
         # flag 값 조회
-        query = "SELECT trading FROM user WHERE username = %s"
+        query = "SELECT trading FROM User WHERE username = %s"
         cursor.execute(query, (userName,))
         all_rows = cursor.fetchall()
 
