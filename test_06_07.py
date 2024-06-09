@@ -1,4 +1,3 @@
-import asyncio
 import ccxt.pro as ccxtpro
 import os
 import pandas as pd
@@ -8,6 +7,7 @@ import datetime
 from aiohttp import ClientTimeout
 import mysql.connector
 import sys
+import time
 
 # .env 파일 로드
 load_dotenv()
@@ -29,18 +29,14 @@ initial_balance = 1000000  # 초기 자본
 take_profit_ratio = 0.05  # 익절 비율
 stop_loss_ratio = 0.02  # 손절 비율
 
-async def fetch_candles(exchange, symbol, timeframe, limit):
+def fetch_candles(exchange, symbol, timeframe, limit):
     max_retries = 5
     for attempt in range(max_retries):
         try:
-            ohlcv = await exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             return ohlcv
-        except asyncio.TimeoutError:
-            print(f"TimeoutError: retrying... {attempt + 1}/{max_retries}")
-            await asyncio.sleep(2)
         except ccxtpro.NetworkError as e:
             print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
-            await asyncio.sleep(2)
     raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
 
 def calculate_indicators(df):
@@ -85,14 +81,14 @@ def update_flags(df):
 
     return df
 
-async def fetch_and_update_data(exchange, symbol, timeframe, lookback):
-    ohlcv = await fetch_candles(exchange, symbol, timeframe, lookback)
+def fetch_and_update_data(exchange, symbol, timeframe, lookback):
+    ohlcv = fetch_candles(exchange, symbol, timeframe, lookback)
     df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms') + pd.Timedelta(hours=9)
     df = calculate_indicators(df)
     return df
 
-async def main(userName, API_KEY, API_SECRET):
+def main(userName, API_KEY, API_SECRET):
     # 15분 데이터 초기 불러오기
     exchange = ccxtpro.binance({
         'apiKey': API_KEY,
@@ -180,10 +176,10 @@ async def main(userName, API_KEY, API_SECRET):
         connection.close()
 
         lookback = 50  # 초기 lookback 값 설정
-        df = await fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
+        df = fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
         df = update_flags(df)
 
-        await asyncio.sleep(1)  # 10초
+        time.sleep(1)  # 10초
 
         # 충분한 데이터가 쌓일 때까지 기다림
         if len(df) >= 14:  # RSI를 계산하는 데 필요한 최소 데이터 수 14
@@ -274,7 +270,7 @@ async def main(userName, API_KEY, API_SECRET):
         cursor.close()
         connection.close()
 
-    await exchange.close()
+    exchange.close()
 
 def run_trading_bot(name, API_KEY, API_SECRET):
     # stop_event = asyncio.Event()
