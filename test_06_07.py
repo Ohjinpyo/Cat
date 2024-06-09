@@ -173,7 +173,8 @@ async def main(userName, API_KEY, API_SECRET):
         all_rows = cursor.fetchall()
 
         flag = bool(all_rows[0][0])
-
+        cursor.close()
+        connection.close()
 
         lookback = 50  # 초기 lookback 값 설정
         df = await fetch_and_update_data(exchange, symbol, timeframe, lookback)  # 883ms정도 걸림
