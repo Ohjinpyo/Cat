@@ -104,7 +104,7 @@ async def main(userName, API_KEY, API_SECRET):
     # MySQL 데이터베이스 연결 설정
     user = 'root'
     password = 'Cat2024!!'
-    host = 'capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com:3306'
+    host = 'capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com'
     port = '3306'
     database = 'backtest'
 
