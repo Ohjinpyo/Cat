@@ -1,48 +1,24 @@
 package com.example.demo.service;
 
+import com.example.demo.model.BinanceData;
 import com.example.demo.model.LiveTrade;
-import com.example.demo.repository.LiveTradeRepository;
-import org.springframework.scheduling.annotation.Scheduled;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class LiveTradeService {
-    private final LiveTradeRepository liveTradeRepository;
-    private List<LiveTrade> lastCheckedTrades;
 
-    public LiveTradeService(LiveTradeRepository liveTradeRepository) {
-        this.liveTradeRepository = liveTradeRepository;
-        this.lastCheckedTrades = new ArrayList<>();
-    }
+    @Autowired
+    private EntityManager entityManager;
 
-    @Scheduled(fixedRate = 20000)
-    public void checkForNewTrades() {
-        List<LiveTrade> currentTrades = liveTradeRepository.findAll();
-        if (!currentTrades.isEmpty()) {
-            if (!lastCheckedTrades.equals(currentTrades)) {
-                List<LiveTrade> newTrades = getNewTrades(currentTrades);
-                if (!newTrades.isEmpty()) {
-                    System.out.println("New trades found: " + newTrades);
-                }
-            }
-            lastCheckedTrades = currentTrades;
-        }
-    }
-
-    private List<LiveTrade> getNewTrades(List<LiveTrade> currentTrades) {
-        List<LiveTrade> newTrades = new ArrayList<>();
-        for (LiveTrade trade : currentTrades) {
-            if (!lastCheckedTrades.contains(trade)) {
-                newTrades.add(trade);
-            }
-        }
-        return newTrades;
-    }
-
-    public List<LiveTrade> getAllTrades() {
-        return liveTradeRepository.findAll();
+    public List<LiveTrade> getLiveTradeLog(String name) {
+        String tableName = name+"livetrade";
+        String sql = "SELECT * FROM " + tableName;
+        Query query = entityManager.createNativeQuery(sql, LiveTrade.class);
+        return query.getResultList();
     }
 }
