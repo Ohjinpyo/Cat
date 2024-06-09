@@ -57,7 +57,8 @@ public class LiveTradeController {
 
             // 파이썬 스크립트 실행
             String pythonScriptPath = "/home/ec2-user/ttttt/test_06_07.py";
-            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
+//            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
+            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g", "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr");
             Process process = processBuilder.start();
 
             // 실행 결과 출력
