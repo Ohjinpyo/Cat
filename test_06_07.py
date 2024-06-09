@@ -277,16 +277,17 @@ async def main(userName, API_KEY, API_SECRET):
     await exchange.close()
 
 def run_trading_bot(name, API_KEY, API_SECRET):
-    stop_event = asyncio.Event()
+    # stop_event = asyncio.Event()
 
-    def stop_bot():
-        input("종료하려면 Enter 키를 누르세요...")
-        stop_event.set()
-
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, stop_bot)
+    # def stop_bot():
+    #     input("종료하려면 Enter 키를 누르세요...")
+    #     stop_event.set()
+    #
+    # loop = asyncio.get_event_loop()
+    # loop.run_in_executor(None, stop_bot)
     # loop.run_until_complete(main(stop_event))
     main(name, API_KEY, API_SECRET)
 
 
-run_trading_bot(name, API_KEY, API_SECRET)
+# run_trading_bot(name, API_KEY, API_SECRET)
+main(name, API_KEY, API_SECRET)
