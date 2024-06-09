@@ -19,7 +19,6 @@ public class LiveTradeExitController {
     @PostMapping
     public void exitTrading(@RequestBody RequestName request) {
         String username = request.getUsername();
-
         // MySQL 데이터베이스 연결 설정
         String user = "root";
         String password = "Cat2024!!";
