@@ -169,7 +169,7 @@ async def main(userName, API_KEY, API_SECRET):
 
         # flag 값 조회
         query = "SELECT trading FROM User WHERE username = %s"
-        cursor.execute(query, (userName,))
+        cursor.execute(query, ("ojp",))
         all_rows = cursor.fetchall()
 
         flag = bool(all_rows[0][0])
