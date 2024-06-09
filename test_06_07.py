@@ -11,12 +11,9 @@ import time
 # .env 파일 로드
 load_dotenv()
 
-# name = sys.argv[1]
-name = "ojp"
-# API_KEY = sys.argv[2]
-API_KEY = "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g"
-#API_SECRET = sys.argv[3]
-API_SECRET = "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr"
+name = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 symbol = "BTC/USDT"
 timeframe = '15m'
