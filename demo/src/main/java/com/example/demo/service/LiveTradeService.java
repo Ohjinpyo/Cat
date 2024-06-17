@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.model.BinanceData;
 import com.example.demo.model.LiveTrade;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
