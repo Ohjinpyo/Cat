@@ -91,22 +91,24 @@ function AutoTradingPage() {
     };
 
     useEffect(() => {
-        if (username != "") {
-            setInterval(() => {
+        if (username !== "") {
+            const intervalId = setInterval(() => {
                 axios.get("http://3.38.101.95:8080/api/getdata", {
-                    username: username
+                    params: { username: username }
                 })
                     .then(response => {
                         console.log("GET 요청 성공:", response.data);
-                        // 여기서 서버로부터 받은 데이터를 처리할 수 있습니다.
                         setTradeLogs(response.data);
                     })
                     .catch(error => {
                         console.error("GET 요청 실패:", error);
                     });
             }, 10000); // 10초(10,000밀리초)마다 실행
+
+            // 컴포넌트가 언마운트될 때 interval을 정리
+            return () => clearInterval(intervalId);
         }
-    }, []);
+    }, [username]); // username이 변경될 때마다 useEffect 재실행
 
     return (
         <div>
