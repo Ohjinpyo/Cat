@@ -93,7 +93,7 @@ function AutoTradingPage() {
     useEffect(() => {
         if (username !== "") {
             const intervalId = setInterval(() => {
-                axios.get("http://3.38.101.95:8080/api/getdata", {
+                axios.post("http://3.38.101.95:8080/api/getdata", {
                     params: { username: username }
                 })
                     .then(response => {
