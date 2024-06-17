@@ -30,10 +30,6 @@ public class LiveTradeController {
         this.liveTradeService = liveTradeService;
     }
 
-    @GetMapping
-    public List<LiveTrade> getAllTrades() {
-        return liveTradeService.getAllTrades();
-    }
 
     @PostMapping
     public void executePythonScript(@RequestBody RequestName request) {

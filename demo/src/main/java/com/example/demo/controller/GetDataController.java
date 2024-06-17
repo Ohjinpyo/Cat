@@ -14,7 +14,7 @@ public class GetDataController {
     @Autowired
     private LiveTradeService liveTradeService;
 
-    @GetMapping("/api/getdata")
+    @PostMapping("/api/getdata")
     public List<LiveTrade> getLiveTradeLog(@RequestBody RequestName request) {
         String username = request.getUsername();
 
