@@ -12,11 +12,8 @@ import time
 load_dotenv()
 
 name = sys.argv[1]
-#name = "ojp"
 API_KEY = sys.argv[2]
-#API_KEY = "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g"
 API_SECRET = sys.argv[3]
-#API_SECRET = "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr"
 
 symbol = "BTC/USDT"
 timeframe = '15m'
@@ -119,7 +116,7 @@ def main(userName, API_KEY, API_SECRET):
     CREATE TABLE IF NOT EXISTS {name}livetrade (
         id INT AUTO_INCREMENT PRIMARY KEY,
         datetime DATETIME,
-        postition VARCHAR(10),
+        position VARCHAR(10),
         entry_price FLOAT,
         exit_price FLOAT,
         profit FLOAT
