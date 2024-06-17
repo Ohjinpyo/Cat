@@ -40,7 +40,8 @@ public class LiveTradeController {
 
         String username = request.getUsername();
         User user = userService.findByUsername(username);
-
+        System.out.println(user.getApikey());
+        System.out.println(user.getApisecret());
         // MySQL 데이터베이스 연결 설정
         String dbuser = "root";
         String password = "Cat2024!!";

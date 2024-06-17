@@ -12,8 +12,11 @@ import time
 load_dotenv()
 
 name = sys.argv[1]
+#name = "ojp"
 API_KEY = sys.argv[2]
+#API_KEY = "uI61g1F6RIe6Vt1xGjlu4ZG8dXnWGUDoZVGVn3MiSJHn9KfNvOd1FvmutMHGPU6g"
 API_SECRET = sys.argv[3]
+#API_SECRET = "H8oZkIbneNh598nV8r3SWEkpimJLi118vYh5qi6O4d9EOqY0A79B6E68Fl6JpiFr"
 
 symbol = "BTC/USDT"
 timeframe = '15m'
@@ -112,11 +115,11 @@ def main(userName, API_KEY, API_SECRET):
     # 커서 생성
     cursor = connection.cursor()
 
-    create_table_query_trades = """
-    CREATE TABLE IF NOT EXISTS trades (
+    create_table_query_user_livetrade = f"""
+    CREATE TABLE IF NOT EXISTS {name}livetrade (
         id INT AUTO_INCREMENT PRIMARY KEY,
         datetime DATETIME,
-        position VARCHAR(10),
+        postition VARCHAR(10),
         entry_price FLOAT,
         exit_price FLOAT,
         profit FLOAT
@@ -124,7 +127,7 @@ def main(userName, API_KEY, API_SECRET):
     """
 
     # 테이블 생성
-    cursor.execute(create_table_query_trades)
+    cursor.execute(create_table_query_user_livetrade)
 
     # 커넥션 및 커서 종료
     cursor.close()
@@ -160,7 +163,7 @@ def main(userName, API_KEY, API_SECRET):
         df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
         df = update_flags(df)
 
-        time.sleep(1)  # 10초 대기
+        time.sleep(10)  # 10초 대기
 
         # 충분한 데이터가 쌓일 때까지 기다림
         if len(df) >= 14:  # RSI를 계산하는 데 필요한 최소 데이터 수 14
@@ -174,12 +177,12 @@ def main(userName, API_KEY, API_SECRET):
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Long position entered at {entry_price}")
+                    print(f"Long position {name} entered at {entry_price}")
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Short position entered at {entry_price}")
+                    print(f"Short position {name} entered at {entry_price}")
             else:
                 if position == 'long':
                     if df['close'].iloc[-1] >= entry_price * (1 + take_profit_ratio) or df['close'].iloc[-1] <= entry_price * (1 - stop_loss_ratio):
@@ -194,7 +197,7 @@ def main(userName, API_KEY, API_SECRET):
                             database=database
                         )
                         cursor = connection.cursor()
-                        query = "INSERT INTO trades (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {name}livetrade (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
                         val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -215,7 +218,7 @@ def main(userName, API_KEY, API_SECRET):
                             database=database
                         )
                         cursor = connection.cursor()
-                        query = "INSERT INTO trades (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {name}livetrade (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
                         val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -245,7 +248,7 @@ def main(userName, API_KEY, API_SECRET):
             database=database
         )
         cursor = connection.cursor()
-        query = "DELETE FROM trades"
+        query = f"DELETE FROM {name}livetrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()

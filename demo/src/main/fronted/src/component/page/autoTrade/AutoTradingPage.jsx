@@ -69,14 +69,26 @@ function AutoTradingPage() {
         })
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
-                console.log("POST 요청 성공:", response.data);
-                // 서버에서 받은 JSON 데이터를 상태에 저장
-                setTradeLogs(response.data); // response.data는 JavaScript 객체임
+                console.log("POST 요청 성공:");
             })
             .catch(error => {
                 // 요청이 실패했을 때 처리할 코드
                 console.error("POST 요청 실패:", error);
             });
+
+        setInterval(() => {
+            axios.get("http://3.38.101.95:8080/api/getdata",{
+                username: username
+            })
+                .then(response => {
+                    console.log("GET 요청 성공:", response.data);
+                    // 여기서 서버로부터 받은 데이터를 처리할 수 있습니다.
+                    setTradeLogs(response.data);
+                })
+                .catch(error => {
+                    console.error("GET 요청 실패:", error);
+                });
+        }, 10000); // 10초(10,000밀리초)마다 실행
     };
 
     const handleExit = () => {
@@ -91,11 +103,6 @@ function AutoTradingPage() {
                 console.error("POST 요청 실패:", error);
             });
     };
-
-    useEffect(() => {
-        // tradeLogs가 변경될 때마다 로그를 출력
-        console.log("tradeLogs:", tradeLogs);
-    }, [tradeLogs]);
 
     return (
         <div>
