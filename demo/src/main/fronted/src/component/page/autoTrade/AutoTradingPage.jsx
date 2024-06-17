@@ -75,20 +75,6 @@ function AutoTradingPage() {
                 // 요청이 실패했을 때 처리할 코드
                 console.error("POST 요청 실패:", error);
             });
-
-        setInterval(() => {
-            axios.get("http://3.38.101.95:8080/api/getdata",{
-                username: username
-            })
-                .then(response => {
-                    console.log("GET 요청 성공:", response.data);
-                    // 여기서 서버로부터 받은 데이터를 처리할 수 있습니다.
-                    setTradeLogs(response.data);
-                })
-                .catch(error => {
-                    console.error("GET 요청 실패:", error);
-                });
-        }, 10000); // 10초(10,000밀리초)마다 실행
     };
 
     const handleExit = () => {
@@ -103,6 +89,24 @@ function AutoTradingPage() {
                 console.error("POST 요청 실패:", error);
             });
     };
+
+    useEffect(() => {
+        if (username != "") {
+            setInterval(() => {
+                axios.get("http://3.38.101.95:8080/api/getdata", {
+                    username: username
+                })
+                    .then(response => {
+                        console.log("GET 요청 성공:", response.data);
+                        // 여기서 서버로부터 받은 데이터를 처리할 수 있습니다.
+                        setTradeLogs(response.data);
+                    })
+                    .catch(error => {
+                        console.error("GET 요청 실패:", error);
+                    });
+            }, 10000); // 10초(10,000밀리초)마다 실행
+        }
+    }, []);
 
     return (
         <div>
