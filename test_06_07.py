@@ -115,7 +115,7 @@ def main(userName, API_KEY, API_SECRET):
     create_table_query_user_livetrade = f"""
     CREATE TABLE IF NOT EXISTS {name}livetrade (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        datetime DATETIME,
+        datetime VARCHAR(20),
         position VARCHAR(10),
         entryPrice FLOAT,
         exitPrice FLOAT,
@@ -195,7 +195,7 @@ def main(userName, API_KEY, API_SECRET):
                         )
                         cursor = connection.cursor()
                         query = f"INSERT INTO {name}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
+                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
@@ -216,7 +216,7 @@ def main(userName, API_KEY, API_SECRET):
                         )
                         cursor = connection.cursor()
                         query = f"INSERT INTO {name}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
+                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
