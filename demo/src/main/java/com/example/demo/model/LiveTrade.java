@@ -3,7 +3,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 public class LiveTrade {
@@ -12,7 +12,7 @@ public class LiveTrade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime datetime;
+    private Timestamp datetime;
     private String position;
     private float entryPrice;
     private float exitPrice;
@@ -26,7 +26,7 @@ public class LiveTrade {
         this.id = id;
     }
 
-    public LocalDateTime getDatetime() {
+    public Timestamp getDatetime() {
         return datetime;
     }
 
