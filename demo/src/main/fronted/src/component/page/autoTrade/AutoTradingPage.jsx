@@ -131,8 +131,8 @@ function AutoTradingPage() {
                             <LogItemWrapper key={index}>
                                 <LogItem>{trade.datetime}</LogItem>
                                 <LogItem>{trade.position}</LogItem>
-                                <LogItem>{trade.entryTime}</LogItem>
-                                <LogItem>{trade.exitTime}</LogItem>
+                                <LogItem>{trade.entryPrice}</LogItem>
+                                <LogItem>{trade.exitPrice}</LogItem>
                                 <LogItem>{trade.profit}</LogItem>
                             </LogItemWrapper>
                         ))
