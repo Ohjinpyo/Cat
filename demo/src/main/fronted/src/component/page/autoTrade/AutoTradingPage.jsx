@@ -83,7 +83,6 @@ function AutoTradingPage() {
         })
             .then(response => {
                 console.log("POST 요청 성공:", response.data);
-                setTradeLogs(response.data);
             })
             .catch(error => {
                 console.error("POST 요청 실패:", error);
