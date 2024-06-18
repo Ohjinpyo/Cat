@@ -121,8 +121,8 @@ function AutoTradingPage() {
                     <LogItemWrapper>
                         <LogItem>시간</LogItem>
                         <LogItem>포지션</LogItem>
-                        <LogItem>진입 시간</LogItem>
-                        <LogItem>청산 시간</LogItem>
+                        <LogItem>진입 가격</LogItem>
+                        <LogItem>청산 가격</LogItem>
                         <LogItem>수익</LogItem>
                     </LogItemWrapper>
                     {Array.isArray(tradeLogs) && tradeLogs.length > 0 ? (
