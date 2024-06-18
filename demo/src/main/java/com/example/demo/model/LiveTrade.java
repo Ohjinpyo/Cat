@@ -14,9 +14,9 @@ public class LiveTrade {
 
     private LocalDateTime datetime;
     private String position;
-    private LocalDateTime entryTime;
-    private LocalDateTime exitTime;
-    private Double profit;
+    private float entryPrice;
+    private float exitPrice;
+    private float profit;
 
     public Long getId() {
         return id;
@@ -42,27 +42,27 @@ public class LiveTrade {
         this.position = position;
     }
 
-    public LocalDateTime getEntryTime() {
-        return entryTime;
+    public float getEntryPrice() {
+        return entryPrice;
     }
 
-    public void setEntryTime(LocalDateTime entryTime) {
-        this.entryTime = entryTime;
+    public void setEntryPrice(float entryPrice) {
+        this.entryPrice = entryPrice;
     }
 
-    public LocalDateTime getExitTime() {
-        return exitTime;
+    public float getExitPrice() {
+        return exitPrice;
     }
 
-    public void setExitTime(LocalDateTime exitTime) {
-        this.exitTime = exitTime;
+    public void setExitPrice(float exitPrice) {
+        this.exitPrice = exitPrice;
     }
 
-    public Double getProfit() {
+    public float getProfit() {
         return profit;
     }
 
-    public void setProfit(Double profit) {
+    public void setProfit(float profit) {
         this.profit = profit;
     }
 }

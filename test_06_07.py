@@ -117,8 +117,8 @@ def main(userName, API_KEY, API_SECRET):
         id INT AUTO_INCREMENT PRIMARY KEY,
         datetime DATETIME,
         position VARCHAR(10),
-        entry_price FLOAT,
-        exit_price FLOAT,
+        entryPrice FLOAT,
+        exitPrice FLOAT,
         profit FLOAT
     )
     """
@@ -194,7 +194,7 @@ def main(userName, API_KEY, API_SECRET):
                             database=database
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {name}livetrade (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {name}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
                         val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -215,7 +215,7 @@ def main(userName, API_KEY, API_SECRET):
                             database=database
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {name}livetrade (datetime, position, entry_price, exit_price, profit) VALUES (%s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {name}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
                         val = (datetime.datetime.now(), position, entry_price, exit_price, profit)
                         cursor.execute(query, val)
                         connection.commit()
