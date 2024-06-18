@@ -30,7 +30,7 @@ public class LiveTrade {
         return datetime;
     }
 
-    public void setDatetime(LocalDateTime datetime) {
+    public void setDatetime(Timestamp datetime) {
         this.datetime = datetime;
     }
 
