@@ -21,15 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/livetrades")
 public class LiveTradeController {
-    private final LiveTradeService liveTradeService;
 
     @Autowired
     private UserService userService;
-
-    public LiveTradeController(LiveTradeService liveTradeService) {
-        this.liveTradeService = liveTradeService;
-    }
-
 
     @PostMapping
     public void executePythonScript(@RequestBody RequestName request) {

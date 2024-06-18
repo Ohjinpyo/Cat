@@ -94,7 +94,7 @@ function AutoTradingPage() {
         if (username !== "") {
             const intervalId = setInterval(() => {
                 axios.post("http://3.38.101.95:8080/api/getdata", {
-                    params: { username: username }
+                    username: username
                 })
                     .then(response => {
                         console.log("GET 요청 성공:", response.data);
