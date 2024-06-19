@@ -100,6 +100,21 @@ def main(userName, API_KEY, API_SECRET):
     port = '3306'
     database = 'backtest'
 
+    # 데이터베이스에 저장된 값 초기화
+    connection = mysql.connector.connect(
+        user=user,
+        password=password,
+        host=host,
+        port=port,
+        database=database
+    )
+    cursor = connection.cursor()
+    query = f"DELETE FROM {name}livetrade"
+    cursor.execute(query)
+    connection.commit()
+    cursor.close()
+    connection.close()
+
     # 데이터베이스 연결
     connection = mysql.connector.connect(
         user=user,
@@ -225,31 +240,18 @@ def main(userName, API_KEY, API_SECRET):
                         position = None
 
     # 결과 로그 데이터프레임 생성
-    if trades_log:
-        trades_df = pd.DataFrame(trades_log)
-        trades_df['cumulative_profit'] = trades_df['profit'].cumsum()
-        trades_df['win'] = trades_df['profit'] > 0
-        win_rate = trades_df['win'].mean()
-        total_profit = trades_df['profit'].sum()
+    # if trades_log:
+    #     trades_df = pd.DataFrame(trades_log)
+    #     trades_df['cumulative_profit'] = trades_df['profit'].cumsum()
+    #     trades_df['win'] = trades_df['profit'] > 0
+    #     win_rate = trades_df['win'].mean()
+    #     total_profit = trades_df['profit'].sum()
+    #
+    #     print(f"Final Balance: {balance}")
+    #     print(f"Total Profit: {total_profit}")
+    #     print(f"Win Rate: {win_rate}")
 
-        print(f"Final Balance: {balance}")
-        print(f"Total Profit: {total_profit}")
-        print(f"Win Rate: {win_rate}")
 
-        # 데이터베이스에 저장된 값 초기화
-        connection = mysql.connector.connect(
-            user=user,
-            password=password,
-            host=host,
-            port=port,
-            database=database
-        )
-        cursor = connection.cursor()
-        query = f"DELETE FROM {name}livetrade"
-        cursor.execute(query)
-        connection.commit()
-        cursor.close()
-        connection.close()
 
 
 main(name, API_KEY, API_SECRET)
