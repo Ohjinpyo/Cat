@@ -78,9 +78,9 @@ function AutoTradingPage() {
     };
 
     const handleExit = () => {
-        axios.post("http://3.38.101.95:8080/api/exit",{
+        axios.post("http://13.125.228.218:8080/api/exit",{
             username: username
-        })13.125.228.218
+        })
             .then(response => {
                 console.log("POST 요청 성공:", response.data);
             })
@@ -92,7 +92,7 @@ function AutoTradingPage() {
     useEffect(() => {
         if (username !== "") {
             const intervalId = setInterval(() => {
-                axios.post("http://3.38.101.95:8080/api/getdata", {
+                axios.post("http://13.125.228.218:8080/api/getdata", {
                     username: username
                 })
                     .then(response => {
