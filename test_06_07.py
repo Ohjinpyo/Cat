@@ -38,7 +38,7 @@ def calculate_indicators(df):
     df['RSI'] = talib.RSI(df['close'], timeperiod=14)
 
     # RSI의 MACD 계산
-    df['RSI_Hist'] = talib.SMA(df['RSI'], timeperiod=9)
+    df['RSI_Hist'] = df['RSI']-talib.SMA(df['RSI'], timeperiod=9)
     
     # MACD 계산
     df['MACD'], df['MACD_signal'], df['MACD_hist'] = talib.MACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
