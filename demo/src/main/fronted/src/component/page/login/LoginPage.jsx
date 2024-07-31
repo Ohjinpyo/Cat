@@ -48,7 +48,7 @@ function LoginPage() {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://3.38.101.95:8080/api/users/login", {
+            const response = await fetch("http://13.125.228.218:8080/api/users/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
