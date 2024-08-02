@@ -47,7 +47,7 @@ public class LiveTradeController {
             statement.executeUpdate(updateFlagQuery);
 
             // 파이썬 스크립트 실행
-            String pythonScriptPath = "/home/ec2-user/ttttt/test_06_07.py";
+            String pythonScriptPath = "/home/ec2-user/ttttt/testConection.py";
             ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
             Process process = processBuilder.start();
 
