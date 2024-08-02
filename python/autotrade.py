@@ -3,10 +3,11 @@ import pandas as pd
 import time
 import mysql.connector
 from datetime import datetime
+import sys
 
-name = 'ojp'
-API_KEY = 'U9sPbEF13MsG74sLS02i4DzQkaW9l4DHs5a9VVxPJ6ZppvhELRGYzBun1Ep8ioLw'
-API_SECRET = 'TDr0yZ2KuCPoGu3s2c2UgXZ8zksS7YLR2K8e2u9SrdlW7MupwbjL5NfSDvCiMFB6'
+name = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 symbol = 'BTC/USDT'
 timeframe = '15m'
