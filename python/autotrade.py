@@ -1,5 +1,6 @@
 import ccxt
 import pandas as pd
+import pandas_ta as ta
 import time
 import mysql.connector
 from datetime import datetime
@@ -85,15 +86,20 @@ def insert_credentials_in_db():
         df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
         price = df['close'].iloc[-1]
 
-        # 데이터베이스에 데이터 삽입
-        insert_query = """
-        INSERT INTO user_credentials (name, api_key, api_secret, updated_at, price)
-        VALUES (%s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (name, API_KEY, API_SECRET, now, price))
+        df['RSI'] = ta.rsi(df['close'], length=14)
+        df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=30)
 
-        # 변경 사항 커밋
-        connection.commit()
+        df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 1, 2]]
+        print(df.tail())
+        # # 데이터베이스에 데이터 삽입
+        # insert_query = """
+        # INSERT INTO user_credentials (name, api_key, api_secret, updated_at, price)
+        # VALUES (%s, %s, %s, %s, %s)
+        # """
+        # cursor.execute(insert_query, (name, API_KEY, API_SECRET, now, price))
+
+        # # 변경 사항 커밋
+        # connection.commit()
 
         print(f"Inserted new credentials for {name} at {now}")
 
