@@ -8,7 +8,6 @@ import sys
 name = sys.argv[1]
 API_KEY = sys.argv[2]
 API_SECRET = sys.argv[3]
-#
 
 symbol = 'BTC/USDT'
 timeframe = '15m'
@@ -84,13 +83,14 @@ def insert_credentials_in_db():
          })
         lookback = 50
         df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
+        price = df['close'].iloc[-1]
 
         # 데이터베이스에 데이터 삽입
         insert_query = """
         INSERT INTO user_credentials (name, api_key, api_secret, updated_at, price)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s)
         """
-        cursor.execute(insert_query, (name, API_KEY, API_SECRET, now, df['close'].iloc[-1]))
+        cursor.execute(insert_query, (name, API_KEY, API_SECRET, now, price))
 
         # 변경 사항 커밋
         connection.commit()
