@@ -3,7 +3,7 @@ import pandas as pd
 import pandas_ta as ta
 import time
 import mysql.connector
-from datetime import datetime
+import datetime
 import sys
 
 NAME = sys.argv[1]
