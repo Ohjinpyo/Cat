@@ -52,8 +52,22 @@ def update_flags(df):
 
     return df
 
-def create_table_if_not_exists():
+def create_table_if_not_exists(name):
     try:
+        connection = mysql.connector.connect(
+        user=USER,
+        password=PASSWORD,
+        host=HOST,
+        port=PORT,
+        database=DATABASE
+        )
+        cursor = connection.cursor()
+        query = f"DELETE FROM {name}livetrade"
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
         # 데이터베이스 연결
         connection = mysql.connector.connect(
             user=USER,
@@ -62,25 +76,23 @@ def create_table_if_not_exists():
             port=PORT,
             database=DATABASE
         )
+
+        # 커서 생성
         cursor = connection.cursor()
 
-        # 테이블 생성 쿼리
-        create_table_query = """
-        CREATE TABLE IF NOT EXISTS user_credentials (
+        create_table_query_user_livetrade = f"""
+        CREATE TABLE IF NOT EXISTS {name}livetrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            datetime VARCHAR(20) NOT NULL,
-            position VARCHAR(10) NOT NULL,
-            entryPrice FLOAT NOT NULL,
-            exitPrice FLOAT NOT NULL,
+            datetime VARCHAR(20),
+            position VARCHAR(10),
+            entryPrice FLOAT,
+            exitPrice FLOAT,
             profit FLOAT
-        );
+        )
         """
 
         # 테이블 생성
-        cursor.execute(create_table_query)
-        connection.commit()
-
-        print("Table `user_credentials` is ready.")
+        cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -238,5 +250,5 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 
 
-create_table_if_not_exists()
+create_table_if_not_exists(NAME)
 insert_credentials_in_db(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
