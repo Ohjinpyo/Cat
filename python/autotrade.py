@@ -186,7 +186,6 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
             df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=30)
             df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 1, 2]]
             df = update_flags(df)
-            print(df.tail())
 
             # 포지션
             if position is None:
