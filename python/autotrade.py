@@ -287,5 +287,5 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 
 create_table_if_not_exists(NAME)
-reboot_table_ik_exists(NAME)
+reboot_table_if_exists(NAME)
 insert_credentials_in_db(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
