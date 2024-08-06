@@ -29,6 +29,16 @@ def update_flags(df):
     
     df['RSI_Flag'] = 0
     df['MACD_Flag'] = 0
+
+    if df['RSI_Hist'].iloc[-4] < 0 and df['RSI_Hist'].iloc[-3] > 0:
+        df.at[df.index[-3], 'RSI_Flag'] = 1
+    elif df['RSI_Hist'].iloc[-4] > 0 and df['RSI_Hist'].iloc[-3] < 0:
+        df.at[df.index[-3], 'RSI_Flag'] = -1
+
+    if df['MACD_hist'].iloc[-4] < 0 and df['MACD_hist'].iloc[-3] > 0:
+        df.at[df.index[-3], 'MACD_Flag'] = 1
+    elif df['MACD_hist'].iloc[-4] > 0 and df['MACD_hist'].iloc[-3] < 0:
+        df.at[df.index[-3], 'MACD_Flag'] = -1
     
     if df['RSI_Hist'].iloc[-3] < 0 and df['RSI_Hist'].iloc[-2] > 0:
         df.at[df.index[-2], 'RSI_Flag'] = 1
@@ -184,7 +194,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
             df['RSI'] = ta.rsi(df['close'], length=14)
             df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=30)
-            df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 1, 2]]
+            df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
             df = update_flags(df)
 
             # 포지션
