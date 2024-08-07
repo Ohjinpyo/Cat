@@ -253,7 +253,11 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         print(f"Short position exited at {exit_price} with profit {profit}")
                         position = None
 
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + position + ", " + str(entry_price))
+            if(position is None):
+                p = 'None'
+            else:
+                p = position
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price))
             time.sleep(60)
 
         
