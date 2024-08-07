@@ -253,8 +253,8 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         print(f"Short position exited at {exit_price} with profit {profit}")
                         position = None
 
-            print('반복문도는중')
-            time.sleep(30)
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + position + ", " + str(entry_price))
+            time.sleep(60)
 
         
         # # 데이터베이스에 데이터 삽입
