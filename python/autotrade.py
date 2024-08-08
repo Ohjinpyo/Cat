@@ -5,6 +5,7 @@ import time
 import mysql.connector
 import datetime
 import sys
+import devide_bakctest2
 
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
@@ -20,8 +21,9 @@ PORT = '3306'
 DATABASE = 'backtest'
 
 BALANCE = 1000000
-PROFITRATIO = 0.05
-LOSSRATIO = 0.02
+FEE = 0.02
+RATIO = 0.3
+LEV = 1
 
 def update_flags(df):
     if len(df) < 3:
@@ -61,6 +63,47 @@ def update_flags(df):
         df.at[df.index[-1], 'MACD_Flag'] = -1
 
     return df
+
+
+def update_flags_backtest(df):
+    if len(df) < 3:
+        return df
+    
+    df['RSI_Flag'] = 0
+    df['MACD_Flag'] = 0
+    for i in range(4, df.shape[0]):
+        if df['RSI_Hist'].iloc[i - 4] < 0 and df['RSI_Hist'].iloc[i - 3] > 0:
+            df.at[df.index[i - 3], 'RSI_Flag'] = 1
+        elif df['RSI_Hist'].iloc[i-4] > 0 and df['RSI_Hist'].iloc[i - 3] < 0:
+            df.at[df.index[i - 3], 'RSI_Flag'] = -1
+
+        if df['MACD_hist'].iloc[i-4] < 0 and df['MACD_hist'].iloc[i - 3] > 0:
+            df.at[df.index[i - 3], 'MACD_Flag'] = 1
+        elif df['MACD_hist'].iloc[i-4] > 0 and df['MACD_hist'].iloc[i - 3] < 0:
+            df.at[df.index[i - 3], 'MACD_Flag'] = -1
+        
+        if df['RSI_Hist'].iloc[i - 3] < 0 and df['RSI_Hist'].iloc[i - 2] > 0:
+            df.at[df.index[i - 2], 'RSI_Flag'] = 1
+        elif df['RSI_Hist'].iloc[i - 3] > 0 and df['RSI_Hist'].iloc[i - 2] < 0:
+            df.at[df.index[i - 2], 'RSI_Flag'] = -1
+
+        if df['MACD_hist'].iloc[i - 3] < 0 and df['MACD_hist'].iloc[i - 2] > 0:
+            df.at[df.index[i - 2], 'MACD_Flag'] = 1
+        elif df['MACD_hist'].iloc[i - 3] > 0 and df['MACD_hist'].iloc[i - 2] < 0:
+            df.at[df.index[i - 2], 'MACD_Flag'] = -1
+
+        if df['RSI_Hist'].iloc[i - 2] < 0 and df['RSI_Hist'].iloc[i - 1] > 0:
+            df.at[df.index[i - 1], 'RSI_Flag'] = 1
+        elif df['RSI_Hist'].iloc[i - 2] > 0 and df['RSI_Hist'].iloc[i - 1] < 0:
+            df.at[df.index[i - 1], 'RSI_Flag'] = -1
+
+        if df['MACD_hist'].iloc[i - 2] < 0 and df['MACD_hist'].iloc[i - 1] > 0:
+            df.at[df.index[i - 1], 'MACD_Flag'] = 1
+        elif df['MACD_hist'].iloc[i - 2] > 0 and df['MACD_hist'].iloc[i - 1] < 0:
+            df.at[df.index[i - 1], 'MACD_Flag'] = -1
+
+    return df
+
 
 def create_table_if_not_exists(name):
     try:
@@ -164,13 +207,28 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         
         # 파라미터들
         lookback = 50
+        backtest_lookback = 960
         balance = BALANCE
         position = None 
         entry_price = 0
         trades_log = []
-        
+        timer_start = datetime.datetime.now()
+        timer_end = timer_start + datetime.timedelta(days=1)
+        backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
+        backtest_df = devide_bakctest2.get_macd(12, 26, 9, backtest_df)
+        backtest_df = devide_bakctest2.get_rsi_ma(14, 50, backtest_df)
+        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
         # 반복문
         while True:
+            # 손익비 찾기
+            if datetime.datetime.now() >= timer_end:
+                timer_start = datetime.datetime.now()
+                timer_end = timer_start + datetime.timedelta(days=1)
+                backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
+                backtest_df = devide_bakctest2.get_macd(12, 26, 9, backtest_df)
+                backtest_df = devide_bakctest2.get_rsi_ma(14, 50, backtest_df)
+                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+
             # 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
                 user=USER,
@@ -211,7 +269,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                     print(f"Short position {username} entered at {entry_price}")
             else:
                 if position == 'long':
-                    if df['close'].iloc[-1] >= entry_price * (1 + PROFITRATIO) or df['close'].iloc[-1] <= entry_price * (1 - LOSSRATIO):
+                    if df['close'].iloc[-1] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-1] <= entry_price * (1 - loss_ratio / 100):
                         exit_price = df['close'].iloc[-1]
                         profit = (exit_price - entry_price) / entry_price  # 수익률 계산
                         balance += profit
@@ -232,7 +290,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         print(f"Long position exited at {exit_price} with profit {profit}")
                         position = None
                 elif position == 'short':
-                    if df['close'].iloc[-1] <= entry_price * (1 - PROFITRATIO) or df['close'].iloc[-1] >= entry_price * (1 + LOSSRATIO):
+                    if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + locals / 100):
                         exit_price = df['close'].iloc[-1]
                         profit = (entry_price - exit_price) / entry_price  # 수익률 계산
                         balance += profit
@@ -253,8 +311,12 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         print(f"Short position exited at {exit_price} with profit {profit}")
                         position = None
 
-            print('반복문도는중')
-            time.sleep(30)
+            if(position is None):
+                p = 'None'
+            else:
+                p = position
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price))
+            time.sleep(60)
 
         
         # # 데이터베이스에 데이터 삽입
