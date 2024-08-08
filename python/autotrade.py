@@ -228,8 +228,12 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 timer_start = datetime.datetime.now()
                 timer_end = timer_start + datetime.timedelta(days=1)
                 backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
+                backtest_df['RSI'] = ta.rsi(backtest_df['close'], length=14)
+                backtest_df['RSI_Hist'] = backtest_df['RSI'] - ta.sma(backtest_df['RSI'], length=30)
+                backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
                 profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+                print(profit_ratio, loss_ratio, flush=True)
 
             # 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
