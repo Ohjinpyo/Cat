@@ -215,18 +215,20 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         timer_start = datetime.datetime.now()
         timer_end = timer_start + datetime.timedelta(days=1)
         backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
-        backtest_df = devide_bakctest2.get_macd(12, 26, 9, backtest_df)
-        backtest_df = devide_bakctest2.get_rsi_ma(14, 50, backtest_df)
+        backtest_df['RSI'] = ta.rsi(backtest_df['close'], length=14)
+        backtest_df['RSI_Hist'] = backtest_df['RSI'] - ta.sma(backtest_df['RSI'], length=30)
+        backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
+        backtest_df = update_flags_backtest(backtest_df)
         profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+        print(profit_ratio, loss_ratio)
         # 반복문
         while True:
             # 손익비 찾기
             if datetime.datetime.now() >= timer_end:
                 timer_start = datetime.datetime.now()
                 timer_end = timer_start + datetime.timedelta(days=1)
-                backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
-                backtest_df = devide_bakctest2.get_macd(12, 26, 9, backtest_df)
-                backtest_df = devide_bakctest2.get_rsi_ma(14, 50, backtest_df)
+                backtest_df = fetch_and_update_data(exchange, SYMBOL, TIMEFRAME, backtest_lookback)
+                backtest_df = update_flags_backtest(backtest_df)
                 profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
 
             # 플래그 확인(데이터베이스)
@@ -352,12 +354,12 @@ def fetch_candles(exchange, symbol, timeframe, limit):
 
 def fetch_and_update_data(exchange, symbol, timeframe, lookback):
     ohlcv = fetch_candles(exchange, symbol, timeframe, lookback)
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms') + pd.Timedelta(hours=9)
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms') + pd.Timedelta(hours=9)
     return df
 
 
-
-create_table_if_not_exists(NAME)
-reboot_table_if_exists(NAME)
-insert_credentials_in_db(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
+if __name__ == "__main__":
+    create_table_if_not_exists(NAME)
+    reboot_table_if_exists(NAME)
+    insert_credentials_in_db(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)

@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas_ta as ta
 import numpy as np
 from multiprocessing import Pool
 import os
@@ -16,71 +17,53 @@ def isplus(number):
 
 # RSI 구하기
 def get_rsi_ma(df, period, ma_period):
-    delta = df['close'].diff(1)
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    rsi = 100 - (100 / (1 + rs))
-    df['rsi'] = rsi  # RSI column 추가
-    
-    rsi_ma = rsi.rolling(window=ma_period).mean()
-    df['rsi_ma'] = rsi_ma  # RSI_MA column 추가
-    rsi_maHistogram = rsi - rsi_ma 
-    df['rsi_maHistogram'] = rsi_maHistogram
+    df['RSI'] = ta.rsi(df['close'], length=period)
+    df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=ma_period)
 
-    df['rsiPosition'] = ''
-    prev_value = df['rsi_maHistogram'].iloc[0]
+    df['RSI_Flag'] = 0
+    prev_value = df['RSI_Hist'].iloc[0]
     for i in range(1, len(df)):
-        current_value = df['rsi_maHistogram'].iloc[i]
+        current_value = df['RSI_Hist'].iloc[i]
         if prev_value < 0 and current_value >= 0:
             if i >= 2:
-                df.at[i-1, 'rsiPosition'] = 'long'
+                df.at[i-1, 'RSI_Flag'] = 1
             if i+2 < len(df):
-                df.at[i, 'rsiPosition'] = 'long'
-                df.at[i+1, 'rsiPosition'] = 'long'
-                # df.at[i+2, 'rsiPosition'] = 'long'
+                df.at[i, 'RSI_Flag'] = 1
+                df.at[i+1, 'RSI_Flag'] = 1
+                # df.at[i+2, 'RSI_Flag'] = 1
         elif prev_value >= 0 and current_value < 0:
             if i >= 2:
-                df.at[i-1, 'rsiPosition'] = 'short'
+                df.at[i-1, 'RSI_Flag'] = -1
             if i+2 < len(df):
-                df.at[i, 'rsiPosition'] = 'short'
-                df.at[i+1, 'rsiPosition'] = 'short'
-                # df.at[i+2, 'rsiPosition'] = 'short'
+                df.at[i, 'RSI_Flag'] = -1
+                df.at[i+1, 'RSI_Flag'] = -1
+                # df.at[i+2, 'RSI_Flag'] = -1
         prev_value = current_value
 
     return df
 
 
 # MACD 구하기
-def get_macd(fast, slow, sig, data):
-    df = data
-    macd_fast = df['close'].ewm(span=fast, adjust=False).mean()  # 단기
-    macd_slow = df['close'].ewm(span=slow, adjust=False).mean()  # 장기
-    macd = macd_slow - macd_fast  # MACD
-    df['macd'] = macd  # MACD column 추가
-    signal = df['macd'].ewm(span=sig, adjust=False).mean()  # 시그널
-    df['signal'] = signal  # 시그널 column 추가
-    histogram = macd - signal  # 히스토그램
-    df['histogram'] = histogram  # 히스토그램 column 추가
-
-    df['maPosition'] = ''
-    prev_value = df['histogram'].iloc[0]
+def get_macd(fast, slow, sig, df):
+    df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=fast, slow=slow, signal=sig).iloc[:, [0, 2, 1]]
+    df['MACD_Flag'] = 0
+    prev_value = df['MACD_hist'].iloc[0]
     for i in range(1, len(df)):
-        current_value = df['histogram'].iloc[i]
+        current_value = df['MACD_hist'].iloc[i]
         if prev_value < 0 and current_value >= 0:
             if i >= 2:
-                df.at[i-1, 'maPosition'] = 'long'
+                df.at[i-1, 'MACD_Flag'] = 1
             if i+2 < len(df):
-                df.at[i, 'maPosition'] = 'long'
-                df.at[i+1, 'maPosition'] = 'long'
-                # df.at[i+2, 'maPosition'] = 'long'
+                df.at[i, 'MACD_Flag'] = 1
+                df.at[i+1, 'MACD_Flag'] = 1
+                # df.at[i+2, 'MACD_Flag'] = 1
         elif prev_value >= 0 and current_value < 0:
             if i >= 2:
-                df.at[i-1, 'maPosition'] = 'short'
+                df.at[i-1, 'MACD_Flag'] = -1
             if i+2 < len(df):
-                df.at[i, 'maPosition'] = 'short'
-                df.at[i+1, 'maPosition'] = 'short'
-                # df.at[i+2, 'maPosition'] = 'short'
+                df.at[i, 'MACD_Flag'] = -1
+                df.at[i+1, 'MACD_Flag'] = -1
+                # df.at[i+2, 'MACD_Flag'] = -1
         prev_value = current_value
 
     return df
@@ -123,12 +106,12 @@ def backtest(data, base, fee, ratio, upSell, downSell, lev):
     # 반복문 돌려 포지션 기록
     for i in range(0, df.shape[0]):
         if state == 'None': # 현재 포지션(Long or Short)이 없을 때
-            if df['maPosition'][i] == 'long' and df['rsiPosition'][i] == 'long':  # Long 진입
+            if df['MACD_Flag'][i] == 1 and df['RSI_Flag'][i] == 1:  # Long 진입
                 state = 'Long'
                 entry_list = enter(i, entry_list, df, state, money*ratio, lev)
                 enterPrice = entry_list['Price'][entry_list.shape[0]-1]
                 contract = entry_list['Contract'][entry_list.shape[0]-1]
-            elif df['maPosition'][i] == 'short' and df['rsiPosition'][i] == 'short':  # Short 진입
+            elif df['MACD_Flag'][i] == -1 and df['RSI_Flag'][i] == -1:  # Short 진입
                 state = 'Short'
                 entry_list = enter(i, entry_list, df, state, money*ratio, lev)
                 enterPrice = entry_list['Price'][entry_list.shape[0]-1]
