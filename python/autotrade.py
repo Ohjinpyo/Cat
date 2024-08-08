@@ -220,14 +220,14 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
         profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
-        print(profit_ratio, loss_ratio)
+        print(profit_ratio, loss_ratio, flush=True)
         # 반복문
         while True:
             # 손익비 찾기
             if datetime.datetime.now() >= timer_end:
                 timer_start = datetime.datetime.now()
                 timer_end = timer_start + datetime.timedelta(days=1)
-                backtest_df = fetch_and_update_data(exchange, SYMBOL, TIMEFRAME, backtest_lookback)
+                backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
                 backtest_df = update_flags_backtest(backtest_df)
                 profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
 
@@ -263,12 +263,12 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Long position {username} entered at {entry_price}")
+                    print(f"Long position {username} entered at {entry_price}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Short position {username} entered at {entry_price}")
+                    print(f"Short position {username} entered at {entry_price}", flush=True)
             else:
                 if position == 'long':
                     if df['close'].iloc[-1] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-1] <= entry_price * (1 - loss_ratio / 100):
@@ -289,7 +289,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Long position exited at {exit_price} with profit {profit}")
+                        print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
                 elif position == 'short':
                     if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + locals / 100):
@@ -310,14 +310,14 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Short position exited at {exit_price} with profit {profit}")
+                        print(f"Short position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
 
             if(position is None):
                 p = 'None'
             else:
                 p = position
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price))
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             time.sleep(60)
 
         
