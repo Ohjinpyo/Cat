@@ -3,6 +3,7 @@ import Chart from "../../mainPage/Chart";
 import styled from "styled-components";
 import axios from "axios";
 import {UserContext, useUser} from '../../../UserContext';
+import reload from "../../image/reload.png"
 
 const ExeContainer = styled.div`
     width: 100%;
@@ -34,7 +35,24 @@ const ExitButton = styled.button`
     color:white;
     padding: 3px 20px;
     cursor: pointer;
-`
+`;
+
+const ReloadButton = styled.button`
+    margin-left: 8px;
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+    padding: 3px 10px; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+
+    img {
+        width: 20px; 
+        height: 20px;
+    }
+`;
+
 
 const LogContainer = styled.div`
     width: 95%;
@@ -89,25 +107,35 @@ function AutoTradingPage() {
             });
     };
 
+    const reloadButton = () => {
+        if (username !== "") {
+            axios.post("http://13.125.228.218:8080/api/getdata", {
+                username: username
+            })
+                .then(response => {
+                    console.log("GET 요청 성공:", response.data);
+                    setTradeLogs(response.data);
+                })
+                .catch(error => {
+                    console.error("GET 요청 실패:", error);
+                });
+        }
+    };
+
     useEffect(() => {
         if (username !== "") {
-            const intervalId = setInterval(() => {
-                axios.post("http://13.125.228.218:8080/api/getdata", {
-                    username: username
+            axios.post("http://13.125.228.218:8080/api/getdata", {
+                username: username
+            })
+                .then(response => {
+                    console.log("GET 요청 성공:", response.data);
+                    setTradeLogs(response.data);
                 })
-                    .then(response => {
-                        console.log("GET 요청 성공:", response.data);
-                        setTradeLogs(response.data);
-                    })
-                    .catch(error => {
-                        console.error("GET 요청 실패:", error);
-                    });
-            }, 10000); // 10초(10,000밀리초)마다 실행
-
-            // 컴포넌트가 언마운트될 때 interval을 정리
-            return () => clearInterval(intervalId);
+                .catch(error => {
+                    console.error("GET 요청 실패:", error);
+                });
         }
-    }, [username]); // username이 변경될 때마다 useEffect 재실행
+    }, []);
 
     return (
         <div>
@@ -116,6 +144,7 @@ function AutoTradingPage() {
                 <ButtonContainer>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
+                    <ReloadButton onClick={reloadButton}><img src={reload} alt="새로고침" /></ReloadButton>
                 </ButtonContainer>
                 <LogContainer>
                     <LogItemWrapper>
