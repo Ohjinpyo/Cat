@@ -296,7 +296,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
                 elif position == 'short':
-                    if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + locals / 100):
+                    if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + loss_ratio / 100):
                         exit_price = df['close'].iloc[-1]
                         profit = (entry_price - exit_price) / entry_price  # 수익률 계산
                         balance += profit
