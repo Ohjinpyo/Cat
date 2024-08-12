@@ -1,5 +1,4 @@
 package com.example.demo.controller;
-
 import com.example.demo.model.LiveTrade;
 import com.example.demo.service.LiveTradeService;
 import org.springframework.web.bind.annotation.*;
@@ -7,7 +6,6 @@ import com.example.demo.model.RequestName;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,8 +28,9 @@ public class LiveTradeController {
 
         String username = request.getUsername();
         User user = userService.findByUsername(username);
-        System.out.println(user.getApikey());
-        System.out.println(user.getApisecret());
+        String strategy = request.getStrategy();
+        //System.out.println(user.getApikey());
+        //System.out.println(user.getApisecret());
         // MySQL 데이터베이스 연결 설정
         String dbuser = "root";
         String password = "Cat2024!!";
@@ -47,7 +46,7 @@ public class LiveTradeController {
             statement.executeUpdate(updateFlagQuery);
 
             // 파이썬 스크립트 실행
-            String pythonScriptPath = "/home/ec2-user/ttttt/python/autotrade.py";
+            String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + ".py";
             ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
             Process process = processBuilder.start();
 

@@ -20,6 +20,12 @@ const ButtonContainer = styled.div`
     align-items: center;
 `;
 
+const StrategySelect = styled.select`
+    margin-left: 8px;
+    padding: 3px;
+    cursor: pointer;
+`;
+
 const ExecuteButton = styled.button`
     margin-left: 8px;
     background-color: grey;
@@ -78,12 +84,18 @@ const LogItem = styled.div`
 
 function AutoTradingPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
+    const [selectedStrategy, setSelectedStrategy] = useState("autotrade");
     const { username } = useUser();
+
+    const handleStrategyChange = (e) => {
+        setSelectedStrategy(e.target.value);
+    };
 
     // 실행 버튼 클릭 시
     const handleExecute = () => {
         axios.post("http://13.125.228.218:8080/api/livetrades",{
-            username: username
+            username: username,
+            strategy: selectedStrategy
         })
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
@@ -142,6 +154,10 @@ function AutoTradingPage() {
             <Chart />
             <ExeContainer>
                 <ButtonContainer>
+                    <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
+                        <option value="autotrade">Macd+Rsi 전략</option>
+                        <option value="aiTest">aiTest</option>
+                    </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <ReloadButton onClick={reloadButton}><img src={reload} alt="새로고침" /></ReloadButton>
