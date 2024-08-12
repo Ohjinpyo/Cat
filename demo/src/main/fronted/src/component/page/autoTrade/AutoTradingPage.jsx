@@ -156,7 +156,7 @@ function AutoTradingPage() {
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
                         <option value="autotrade">Macd+Rsi 전략</option>
-                        <option value="aiTest">aiTest</option>
+                        <option value="ai_autotrade">ai_autotrade</option>
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
