@@ -41,7 +41,7 @@ const ReloadButton = styled.button`
     margin-left: 8px;
     background-color: white;
     color: black;
-    border: 1px solid black;
+    border: none;
     padding: 3px 10px; 
     cursor: pointer;
     display: flex;
