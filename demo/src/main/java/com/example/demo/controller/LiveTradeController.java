@@ -53,7 +53,7 @@ public class LiveTradeController {
             // 실행 결과 출력
             BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
             String line;
-            System.out.println("파이썬 스크립트 실행 중:");
+            System.out.println("파이썬 스크립트 실행 중: 자동매매 시작");
             while ((line = stdoutReader.readLine()) != null) {
                 System.out.println(line);
             }
@@ -68,7 +68,7 @@ public class LiveTradeController {
             // 종료 코드 확인
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                System.out.println("자동매매 시작");
+                System.out.println("자동매매 종료");
             } else {
                 System.err.println("Python 스크립트 실행 오류! 종료 코드: " + exitCode);
             }
