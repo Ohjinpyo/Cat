@@ -9,13 +9,9 @@ import devide_bakctest2
 from ai import ai_test
 
 
-# NAME = sys.argv[1]
-# API_KEY = sys.argv[2]
-# API_SECRET = sys.argv[3]
-
-NAME = 'ojp'
-API_KEY = 'U9sPbEF13MsG74sLS02i4DzQkaW9l4DHs5a9VVxPJ6ZppvhELRGYzBun1Ep8ioLw'
-API_SECRET = 'TDr0yZ2KuCPoGu3s2c2UgXZ8zksS7YLR2K8e2u9SrdlW7MupwbjL5NfSDvCiMFB6'
+NAME = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 SYMBOL = 'BTC/USDT'
 TIMEFRAME = '15m'
