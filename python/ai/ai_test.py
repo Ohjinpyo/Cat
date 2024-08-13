@@ -60,9 +60,9 @@ def set_model_macd():
     # model_macd_hist = load_model("D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/btc_macd_hist_predictor.h5")
     # scaler_features_macd = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_features_macd.pkl')
     # scaler_target_macd = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_target_macd.pkl')
-    model_macd_hist = load_model("~/ttttt/python/ai/btc_macd_hist_predictor.h5")
-    scaler_features_macd = joblib.load('~/ttttt/python/ai/scaler_features_macd.pkl')
-    scaler_target_macd = joblib.load('~/ttttt/python/ai/scaler_target_macd.pkl')
+    model_macd_hist = load_model("/home/ec2-user/ttttt/python/ai/btc_macd_hist_predictor.h5")
+    scaler_features_macd = joblib.load('/home/ec2-user/ttttt/python/ai/scaler_features_macd.pkl')
+    scaler_target_macd = joblib.load('/home/ec2-user/ttttt/python/ai/scaler_target_macd.pkl')
 
     return model_macd_hist, scaler_features_macd, scaler_target_macd
 
@@ -71,9 +71,9 @@ def set_model_rsi():
     # model_rsi_avg = load_model("D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/btc_rsi_avg_predictor.h5")
     # scaler_features_rsi = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_features_rsi.pkl')
     # scaler_target_rsi = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_target_rsi.pkl')
-    model_rsi_avg = load_model("~/ttttt/python/ai/btc_rsi_avg_predictor.h5")
-    scaler_features_rsi = joblib.load('~/ttttt/python/ai/scaler_features_rsi.pkl')
-    scaler_target_rsi = joblib.load('~/ttttt/python/ai/scaler_target_rsi.pkl')
+    model_rsi_avg = load_model("/home/ec2-user/ttttt/python/ai/btc_rsi_avg_predictor.h5")
+    scaler_features_rsi = joblib.load('/home/ec2-user/ttttt/python/ai/scaler_features_rsi.pkl')
+    scaler_target_rsi = joblib.load('/home/ec2-user/ttttt/python/ai/scaler_target_rsi.pkl')
 
     return model_rsi_avg, scaler_features_rsi, scaler_target_rsi
 
