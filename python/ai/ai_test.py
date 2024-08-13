@@ -55,22 +55,33 @@ exchange = ccxt.binance({
 # NaN 값 제거
 # df = df.dropna()
 
-def set_module():    
+def set_model_macd():    
     # 모델 및 스케일러 로드
-    model_macd_hist = load_model("btc_macd_hist_predictor.h5")
-    scaler_features_macd = joblib.load('scaler_features_macd.pkl')
-    scaler_target_macd = joblib.load('scaler_target_macd.pkl')
+    # model_macd_hist = load_model("D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/btc_macd_hist_predictor.h5")
+    # scaler_features_macd = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_features_macd.pkl')
+    # scaler_target_macd = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_target_macd.pkl')
+    model_macd_hist = load_model("~/ttttt/python/ai/btc_macd_hist_predictor.h5")
+    scaler_features_macd = joblib.load('~/ttttt/python/ai/scaler_features_macd.pkl')
+    scaler_target_macd = joblib.load('~/ttttt/python/ai/scaler_target_macd.pkl')
 
-    model_rsi_avg = load_model("btc_rsi_avg_predictor.h5")
-    scaler_features_rsi = joblib.load('scaler_features_rsi.pkl')
-    scaler_target_rsi = joblib.load('scaler_target_rsi.pkl')
+    return model_macd_hist, scaler_features_macd, scaler_target_macd
 
-    return model_macd_hist, scaler_features_macd, scaler_target_macd, model_rsi_avg, scaler_features_rsi, scaler_target_rsi
+def set_model_rsi():
 
-def ai(model_macd_hist, scaler_features_macd, scaler_target_macd, model_rsi_avg, scaler_features_rsi, scaler_target_rsi, df):
+    # model_rsi_avg = load_model("D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/btc_rsi_avg_predictor.h5")
+    # scaler_features_rsi = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_features_rsi.pkl')
+    # scaler_target_rsi = joblib.load('D:/study/college/capstone/capstoneCode/java/springboot/ttttt/python/ai/scaler_target_rsi.pkl')
+    model_rsi_avg = load_model("~/ttttt/python/ai/btc_rsi_avg_predictor.h5")
+    scaler_features_rsi = joblib.load('~/ttttt/python/ai/scaler_features_rsi.pkl')
+    scaler_target_rsi = joblib.load('~/ttttt/python/ai/scaler_target_rsi.pkl')
+
+    return model_rsi_avg, scaler_features_rsi, scaler_target_rsi
+
+
+def get_predict(model_macd_hist, scaler_features_macd, scaler_target_macd, model_rsi_avg, scaler_features_rsi, scaler_target_rsi, df):
     # 특성과 타겟 변수 정의
-    features_macd = df[['Rsi', 'Macd', 'MacdSignal']].values
-    features_rsi = df[['Rsi', 'Macd', 'close','open', 'high', 'low', 'MacdSignal', 'MacdHist', 'MovingAverage']].values
+    features_macd = df[['Rsi', 'Macd', 'MacdSignal']].values[-10:]
+    features_rsi = df[['Rsi', 'Macd', 'close','open', 'high', 'low', 'MacdSignal', 'MacdHist', 'MovingAverage']].values[-10:]
 
     scaled_features_macd = scaler_features_macd.transform(features_macd)
     scaled_features_rsi = scaler_features_rsi.transform(features_rsi)
@@ -86,7 +97,9 @@ def ai(model_macd_hist, scaler_features_macd, scaler_target_macd, model_rsi_avg,
     y_pred_rsi = model_rsi_avg.predict(X_recent_seq_rsi)
     y_pred_rsi = scaler_target_rsi.inverse_transform(y_pred_rsi)
 
-    return y_pred_macd[0][0], y_pred_rsi[0][0]
+    # 결과 출력
+    return y_pred_macd, y_pred_rsi
+
 
 
 # 결과 출력
