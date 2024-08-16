@@ -8,26 +8,30 @@ import sys
 import devide_bakctest2
 from ai import ai_test
 
-
+# 데이터베이스에서 이름/api키 받아오기
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
 API_SECRET = sys.argv[3]
 
+# 바이낸스 api를 사용하기 위한 심볼과 봉 시간 설정
 SYMBOL = 'BTC/USDT'
 TIMEFRAME = '15m'
 
+# 데이터베이스
 USER = 'root'
 PASSWORD = 'Cat2024!!'
 HOST = 'capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com'
 PORT = '3306'
 DATABASE = 'backtest'
 
+# 투자 파라미터
 BALANCE = 1000000
 FEE = 0.02
 RATIO = 0.3
 LEV = 1
 
 
+# 거래 플래그 업데이트하는 함수
 def update_flags(df):
     if len(df) < 3:
         return df
@@ -35,6 +39,7 @@ def update_flags(df):
     df['RSI_Flag'] = 0
     df['MACD_Flag'] = 0
 
+    # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
     if df['Rsi_avg'].iloc[-4] < 0 and df['Rsi_avg'].iloc[-3] > 0:
         df.at[df.index[-3], 'RSI_Flag'] = 1
     elif df['Rsi_avg'].iloc[-4] > 0 and df['Rsi_avg'].iloc[-3] < 0:
@@ -68,13 +73,17 @@ def update_flags(df):
     return df
 
 
+# 거래 플래그 업데이트하는 함수(백테스트용)
 def update_flags_backtest(df):
     if len(df) < 3:
         return df
     
     df['RSI_Flag'] = 0
     df['MACD_Flag'] = 0
+
+    # 백테스트용이라 마지막3개만 찍는게 아니라 반복문돌려서 전부 찍음
     for i in range(4, df.shape[0]):
+        # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
         if df['Rsi_avg'].iloc[i - 4] < 0 and df['Rsi_avg'].iloc[i - 3] > 0:
             df.at[df.index[i - 3], 'RSI_Flag'] = 1
         elif df['Rsi_avg'].iloc[i-4] > 0 and df['Rsi_avg'].iloc[i - 3] < 0:
@@ -108,6 +117,7 @@ def update_flags_backtest(df):
     return df
 
 
+# 데이터베이스가 없으면 만들기
 def create_table_if_not_exists(name):
     try:
         # 데이터베이스 연결
@@ -125,11 +135,14 @@ def create_table_if_not_exists(name):
         create_table_query_user_livetrade = f"""
         CREATE TABLE IF NOT EXISTS {name}livetrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            datetime VARCHAR(20),
             position VARCHAR(10),
+            entryTime VARCHAR(20),
             entryPrice FLOAT,
+            exitTime VARCHAR(20),
             exitPrice FLOAT,
-            profit FLOAT
+            contract FLOAT,
+            profit FLOAT,
+            deposit FLOAT
         )
         """
 
@@ -144,9 +157,10 @@ def create_table_if_not_exists(name):
             cursor.close()
             connection.close()
 
+
+#데이터베이스가 이미 있으면 초기화
 def reboot_table_if_exists(name):
     try:
-        # 있으면 초기화
         connection = mysql.connector.connect(
         user=USER,
         password=PASSWORD,
@@ -176,11 +190,14 @@ def reboot_table_if_exists(name):
         create_table_query_user_livetrade = f"""
         CREATE TABLE IF NOT EXISTS {name}livetrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            datetime VARCHAR(20),
             position VARCHAR(10),
+            entryTime VARCHAR(20),
             entryPrice FLOAT,
+            exitTime VARCHAR(20),
             exitPrice FLOAT,
-            profit FLOAT
+            contract FLOAT,
+            profit FLOAT,
+            deposit FLOAT
         )
         """
 
@@ -196,7 +213,30 @@ def reboot_table_if_exists(name):
             connection.close()
 
 
-def insert_credentials_in_db(username, key, secret, symbol, timeframe):
+# 바이낸스에서 차트 데이터 받아오기
+def fetch_candles(exchange, symbol, timeframe, limit):
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+            return ohlcv
+        except ccxt.NetworkError as e:
+            print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
+            time.sleep(2)
+    raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
+
+
+# 받아온 차트 데이터 원하는 형태의 데이터프레임화
+def fetch_and_update_data(exchange, symbol, timeframe, lookback):
+    ohlcv = fetch_candles(exchange, symbol, timeframe, lookback)
+    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
+    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms') + pd.Timedelta(hours=9)
+    df['MovingAverage'] = ta.sma(df['close'], length=30)
+    return df
+
+
+# 메인 함수
+def auto_trade(username, key, secret, symbol, timeframe):
     try:
         exchange = ccxt.binance({
         'apiKey': key,
@@ -208,7 +248,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
          })
         
-        # 모듈 로드를 위한 데이터프레임
+        # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
         df['Rsi'] = ta.rsi(df['close'], length=14)
         df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
@@ -224,7 +264,10 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         # 파라미터들
         lookback = 60
         backtest_lookback = 960
-        balance = BALANCE
+        deposit = BALANCE
+        ratio = RATIO
+        lev = LEV
+        fee = FEE
         position = None 
         entry_price = 0
         timer_start = datetime.datetime.now()
@@ -236,8 +279,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
         backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
-        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
-
+        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
         # 손익비 출력
         print(profit_ratio, loss_ratio, flush=True)
 
@@ -252,10 +294,10 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
                 backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
-                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
                 print(profit_ratio, loss_ratio, flush=True)
 
-            # 플래그 확인(데이터베이스)
+            # 거래 상태 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
                 user=USER,
                 password=PASSWORD,
@@ -271,6 +313,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
             cursor.close()
             connection.close()
 
+            # 거래 상태 플래그가 False면 거래 중단
             if flag == False:
                 break
 
@@ -284,26 +327,39 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
             predict = pd.DataFrame({'MacdHist':[macd_hist[0][0]], 'Rsi_avg':[rsi_hist[0][0]]})
             df = pd.concat([df, predict])
             df = update_flags(df)
+            # 데이터프레임 출력
             print(df.tail(), flush=True)
 
             # 포지션
             if position is None:
+                # 플래그 두개가 3틱이내에 겹치면 포지션 생성
                 if (df['RSI_Flag'].iloc[-1] == 1 or df['RSI_Flag'].iloc[-2] == 1 or df['RSI_Flag'].iloc[-3] == 1) and \
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
-                    print(f"Long position {username} entered at {entry_price}", flush=True)
+                    contract = deposit * ratio * lev / entry_price
+                    # 포지션 생성 문구 출력
+                    print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
-                    print(f"Short position {username} entered at {entry_price}", flush=True)
+                    contract = deposit * ratio * lev / entry_price
+                    # 포지션 생성 문구 출력
+                    print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
             else:
+                # 청산
                 if position == 'long':
                     if df['close'].iloc[-2] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-2] <= entry_price * (1 - loss_ratio / 100):
                         exit_price = df['close'].iloc[-2]
-                        profit = (exit_price - entry_price) / entry_price  # 수익률 계산
-                        balance += profit
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        # 수익률 계산
+                        profit = (exit_price - entry_price) * (1 - fee / 100) * contract
+                        profit_ratio = profit / (entry_price * contract)
+                        deposit += profit
+
                         connection = mysql.connector.connect(
                             user=USER,
                             password=PASSWORD,
@@ -312,19 +368,26 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
+                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
+                        # 포지션 청산 문구 출력
+                        print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
+                        entry_price = 0
+                        exit_price = 0
                 elif position == 'short':
                     if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
                         exit_price = df['close'].iloc[-2]
-                        profit = (entry_price - exit_price) / entry_price  # 수익률 계산
-                        balance += profit
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        # 수익률 계산
+                        profit = (entry_price - exit_price) * (1 - fee / 100) * contract
+                        profit_ratio = profit / (entry_price * contract)
+                        deposit += profit
+
                         connection = mysql.connector.connect(
                             user=USER,
                             password=PASSWORD,
@@ -333,22 +396,26 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
+                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), exit_price, contract, profit, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Short position exited at {exit_price} with profit {profit}", flush=True)
+                        # 포지션 청산 문구 출력
+                        print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
+                        entry_price = 0
+                        exit_price = 0
 
             if(position is None):
                 p = 'None'
             else:
                 p = position
+            # 현재 시간과 포지션, entry_price 출력
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
+            # 1분 sleep
             time.sleep(60)
-
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -359,27 +426,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
             connection.close()
 
 
-def fetch_candles(exchange, symbol, timeframe, limit):
-    max_retries = 5
-    for attempt in range(max_retries):
-        try:
-            ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
-            return ohlcv
-        except ccxt.NetworkError as e:
-            print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
-            time.sleep(2)
-    raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
-
-
-def fetch_and_update_data(exchange, symbol, timeframe, lookback):
-    ohlcv = fetch_candles(exchange, symbol, timeframe, lookback)
-    df = pd.DataFrame(ohlcv, columns=['datetime', 'open', 'high', 'low', 'close', 'volume'])
-    df['datetime'] = pd.to_datetime(df['datetime'], unit='ms') + pd.Timedelta(hours=9)
-    df['MovingAverage'] = ta.sma(df['close'], length=30)
-    return df
-
-
 if __name__ == "__main__":
     create_table_if_not_exists(NAME)
     reboot_table_if_exists(NAME)
-    insert_credentials_in_db(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
+    auto_trade(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
