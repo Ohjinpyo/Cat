@@ -150,7 +150,8 @@ def create_table_if_not_exists(name):
         cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        print()
+        #print(f"Error: {err}")
 
     finally:
         if connection.is_connected():
@@ -205,7 +206,8 @@ def reboot_table_if_exists(name):
         cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        #print(f"Error: {err}")
+        print()
 
     finally:
         if connection.is_connected():
@@ -221,7 +223,7 @@ def fetch_candles(exchange, symbol, timeframe, limit):
             ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             return ohlcv
         except ccxt.NetworkError as e:
-            print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
+            #print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
             time.sleep(2)
     raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
 
@@ -259,7 +261,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
         # 모델 최초 로드
         model1, model2, model3 = ai_test.set_model_macd()
         model4, model5, model6 = ai_test.set_model_rsi()
-        # print(ai_test.get_predict(model1, model2, model3, model4, model5, model6, df))
+        # #print(ai_test.get_predict(model1, model2, model3, model4, model5, model6, df))
 
         # 파라미터들
         lookback = 60
@@ -281,7 +283,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
         backtest_df = update_flags_backtest(backtest_df)
         profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
         # 손익비 출력
-        print(profit_ratio, loss_ratio, flush=True)
+        #print(profit_ratio, loss_ratio, flush=True)
 
         # 반복문
         while True:
@@ -295,7 +297,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
                 profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
-                print(profit_ratio, loss_ratio, flush=True)
+                #print(profit_ratio, loss_ratio, flush=True)
 
             # 거래 상태 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
@@ -328,7 +330,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
             df = pd.concat([df, predict])
             df = update_flags(df)
             # 데이터프레임 출력
-            print(df.tail(), flush=True)
+            #print(df.tail(), flush=True)
 
             # 포지션
             if position is None:
@@ -340,7 +342,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     entry_price = df['close'].iloc[-2]
                     contract = deposit * ratio * lev / entry_price
                     # 포지션 생성 문구 출력
-                    print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
+                    #print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
@@ -348,7 +350,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     entry_price = df['close'].iloc[-2]
                     contract = deposit * ratio * lev / entry_price
                     # 포지션 생성 문구 출력
-                    print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
+                    #print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
             else:
                 # 청산
                 if position == 'long':
@@ -375,7 +377,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         cursor.close()
                         connection.close()
                         # 포지션 청산 문구 출력
-                        print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
                         entry_price = 0
                         exit_price = 0
@@ -403,7 +405,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         cursor.close()
                         connection.close()
                         # 포지션 청산 문구 출력
-                        print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
                         entry_price = 0
                         exit_price = 0
@@ -413,12 +415,13 @@ def auto_trade(username, key, secret, symbol, timeframe):
             else:
                 p = position
             # 현재 시간과 포지션, entry_price 출력
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
             time.sleep(60)
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        #print(f"Error: {err}")
+        print()
 
     finally:
         if connection.is_connected():
