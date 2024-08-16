@@ -417,7 +417,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
             # 현재 시간과 포지션, entry_price 출력
             #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
-            time.sleep(60)
+            time.sleep(600)
 
     except mysql.connector.Error as err:
         #print(f"Error: {err}")
