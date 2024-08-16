@@ -134,7 +134,8 @@ def create_table_if_not_exists(name):
         cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        #print(f"Error: {err}")
+        pass
 
     finally:
         if connection.is_connected():
@@ -185,7 +186,8 @@ def reboot_table_if_exists(name):
         cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        #print(f"Error: {err}")
+        pass
 
     finally:
         if connection.is_connected():
@@ -220,7 +222,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
         profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
-        print(profit_ratio, loss_ratio, flush=True)
+        #print(profit_ratio, loss_ratio, flush=True)
         # 반복문
         while True:
             # 손익비 찾기
@@ -233,7 +235,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
                 profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
-                print(profit_ratio, loss_ratio, flush=True)
+                #print(profit_ratio, loss_ratio, flush=True)
 
             # 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
@@ -267,12 +269,12 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Long position {username} entered at {entry_price}", flush=True)
+                    #print(f"Long position {username} entered at {entry_price}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
                     entry_price = df['close'].iloc[-1]
-                    print(f"Short position {username} entered at {entry_price}", flush=True)
+                    #print(f"Short position {username} entered at {entry_price}", flush=True)
             else:
                 if position == 'long':
                     if df['close'].iloc[-1] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-1] <= entry_price * (1 - loss_ratio / 100):
@@ -293,7 +295,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
+                        #print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
                 elif position == 'short':
                     if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + loss_ratio / 100):
@@ -314,15 +316,15 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        print(f"Short position exited at {exit_price} with profit {profit}", flush=True)
+                        #print(f"Short position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
 
             if(position is None):
                 p = 'None'
             else:
                 p = position
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
-            time.sleep(60)
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
+            time.sleep(30)
 
         
         # # 데이터베이스에 데이터 삽입
@@ -336,7 +338,8 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
         # connection.commit()
 
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        #print(f"Error: {err}")
+        pass
 
     finally:
         if connection.is_connected():
@@ -351,7 +354,7 @@ def fetch_candles(exchange, symbol, timeframe, limit):
             ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             return ohlcv
         except ccxt.NetworkError as e:
-            print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
+            #print(f"NetworkError: {e}, retrying... {attempt + 1}/{max_retries}")
             time.sleep(2)
     raise Exception(f"Failed to fetch OHLCV data after {max_retries} attempts")
 
