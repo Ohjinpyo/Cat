@@ -150,7 +150,7 @@ def create_table_if_not_exists(name):
         cursor.execute(create_table_query_user_livetrade)
 
     except mysql.connector.Error as err:
-        print()
+        pass
         #print(f"Error: {err}")
 
     finally:
@@ -207,7 +207,7 @@ def reboot_table_if_exists(name):
 
     except mysql.connector.Error as err:
         #print(f"Error: {err}")
-        print()
+        pass
 
     finally:
         if connection.is_connected():
@@ -417,11 +417,11 @@ def auto_trade(username, key, secret, symbol, timeframe):
             # 현재 시간과 포지션, entry_price 출력
             #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
-            time.sleep(600)
+            time.sleep(60)
 
     except mysql.connector.Error as err:
         #print(f"Error: {err}")
-        print()
+        pass
 
     finally:
         if connection.is_connected():
