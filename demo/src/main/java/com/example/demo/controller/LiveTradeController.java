@@ -51,31 +51,31 @@ public class LiveTradeController {
             Process process = processBuilder.start();
 
             // 실행 결과 출력
-            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-            String line;
+//            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+//            String line;
             System.out.println("파이썬 스크립트 실행 중: 자동매매 시작");
-            while ((line = stdoutReader.readLine()) != null) {
-                System.out.println(line);
-            }
+//            while ((line = stdoutReader.readLine()) != null) {
+//                System.out.println(line);
+//            }
+//
+//            // 실행 오류 출력
+//            BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
+//            System.err.println("파이썬 스크립트 실행 오류:");
+//            while ((line = stderrReader.readLine()) != null) {
+//                System.err.println(line);
+//            }
+//
+//            // 종료 코드 확인
+//            int exitCode = process.waitFor();
+//            if (exitCode == 0) {
+//                System.out.println("자동매매 종료");
+//            } else {
+//                System.err.println("Python 스크립트 실행 오류! 종료 코드: " + exitCode);
+//            }
 
-            // 실행 오류 출력
-            BufferedReader stderrReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8));
-            System.err.println("파이썬 스크립트 실행 오류:");
-            while ((line = stderrReader.readLine()) != null) {
-                System.err.println(line);
-            }
-
-            // 종료 코드 확인
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                System.out.println("자동매매 종료");
-            } else {
-                System.err.println("Python 스크립트 실행 오류! 종료 코드: " + exitCode);
-            }
-
-            // 리더 닫기
-            stdoutReader.close();
-            stderrReader.close();
+//            // 리더 닫기
+//            stdoutReader.close();
+//            stderrReader.close();
 
             // 데이터베이스 연결 및 리소스 닫기
             statement.close();
