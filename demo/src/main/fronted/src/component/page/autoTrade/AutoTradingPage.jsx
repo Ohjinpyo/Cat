@@ -93,7 +93,7 @@ function AutoTradingPage() {
 
     // 실행 버튼 클릭 시
     const handleExecute = () => {
-        axios.post("http://3.38.246.24:8080/api/livetrades",{
+        axios.post("http://3.35.17.231:8080/api/livetrades",{
             username: username,
             strategy: selectedStrategy
         })
@@ -108,7 +108,7 @@ function AutoTradingPage() {
     };
 
     const handleExit = () => {
-        axios.post("http://3.38.246.24:8080/api/exit",{
+        axios.post("http://3.35.17.231:8080/api/exit",{
             username: username
         })
             .then(response => {
@@ -121,7 +121,7 @@ function AutoTradingPage() {
 
     const reloadButton = () => {
         if (username !== "") {
-            axios.post("http://3.38.246.24:8080/api/getdata", {
+            axios.post("http://3.35.17.231:8080/api/getdata", {
                 username: username
             })
                 .then(response => {
@@ -136,7 +136,7 @@ function AutoTradingPage() {
 
     useEffect(() => {
         if (username !== "") {
-            axios.post("http://3.38.246.24:8080/api/getdata", {
+            axios.post("http://3.35.17.231:8080/api/getdata", {
                 username: username
             })
                 .then(response => {
