@@ -52,7 +52,7 @@ function SignUpPage() {
         }
 
         try {
-            const response = await fetch("http://3.38.246.24:8080/api/users/sign-up", {
+            const response = await fetch("http://3.35.17.231:8080/api/users/sign-up", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
