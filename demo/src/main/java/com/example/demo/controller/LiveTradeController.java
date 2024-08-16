@@ -80,7 +80,7 @@ public class LiveTradeController {
             // 데이터베이스 연결 및 리소스 닫기
             statement.close();
             connection.close();
-        } catch (SQLException | IOException | InterruptedException e) {
+        } catch (SQLException | IOException e) {
             System.err.println("Python 스크립트 실행 중 예외 발생: " + e.getMessage());
         }
 
