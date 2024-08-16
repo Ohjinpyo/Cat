@@ -11,11 +11,14 @@ public class LiveTrade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String datetime;
     private String position;
+    private String entryTime;
     private float entryPrice;
+    private String exitTime;
     private float exitPrice;
+    private float contract;
     private float profit;
+    private float deposit;
 
     public Long getId() {
         return id;
@@ -23,14 +26,6 @@ public class LiveTrade {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getDatetime() {
-        return datetime;
-    }
-
-    public void setDatetime(String datetime) {
-        this.datetime = datetime;
     }
 
     public String getPosition() {
@@ -41,12 +36,28 @@ public class LiveTrade {
         this.position = position;
     }
 
+    public String getEntryTime() {
+        return entryTime;
+    }
+
+    public void setEntryTime(String entryTime) {
+        this.entryTime = entryTime;
+    }
+
     public float getEntryPrice() {
         return entryPrice;
     }
 
     public void setEntryPrice(float entryPrice) {
         this.entryPrice = entryPrice;
+    }
+
+    public String getExitTime() {
+        return exitTime;
+    }
+
+    public void setExitTime(String exitTime) {
+        this.exitTime = exitTime;
     }
 
     public float getExitPrice() {
@@ -57,11 +68,27 @@ public class LiveTrade {
         this.exitPrice = exitPrice;
     }
 
+    public float getContract() {
+        return contract;
+    }
+
+    public void setContract(float contract) {
+        this.contract = contract;
+    }
+
     public float getProfit() {
         return profit;
     }
 
     public void setProfit(float profit) {
         this.profit = profit;
+    }
+
+    public float getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(float deposit) {
+        this.deposit = deposit;
     }
 }

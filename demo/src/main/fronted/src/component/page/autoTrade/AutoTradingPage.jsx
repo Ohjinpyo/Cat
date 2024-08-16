@@ -164,20 +164,26 @@ function AutoTradingPage() {
                 </ButtonContainer>
                 <LogContainer>
                     <LogItemWrapper>
-                        <LogItem>시간</LogItem>
                         <LogItem>포지션</LogItem>
+                        <LogItem>진입 시간</LogItem>
                         <LogItem>진입 가격</LogItem>
+                        <LogItem>청산 시간</LogItem>
                         <LogItem>청산 가격</LogItem>
+                        <LogItem>계약수</LogItem>
                         <LogItem>수익</LogItem>
+                        <LogItem>잔고</LogItem>
                     </LogItemWrapper>
                     {Array.isArray(tradeLogs) && tradeLogs.length > 0 ? (
                         tradeLogs.map((trade, index) => (
                             <LogItemWrapper key={index}>
-                                <LogItem>{trade.datetime}</LogItem>
                                 <LogItem>{trade.position}</LogItem>
+                                <LogItem>{trade.entryTime}</LogItem>
                                 <LogItem>{trade.entryPrice}</LogItem>
+                                <LogItem>{trade.exitTime}</LogItem>
                                 <LogItem>{trade.exitPrice}</LogItem>
+                                <LogItem>{trade.contrat}</LogItem>
                                 <LogItem>{trade.profit}</LogItem>
+                                <LogItem>{trade.deposit}</LogItem>
                             </LogItemWrapper>
                         ))
                     ) : (
