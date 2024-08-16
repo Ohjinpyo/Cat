@@ -91,10 +91,10 @@ def get_predict(model_macd_hist, scaler_features_macd, scaler_target_macd, model
     X_recent_seq_rsi = scaled_features_rsi.reshape((1, 10, scaled_features_rsi.shape[1]))
 
     # 예측
-    y_pred_macd = model_macd_hist.predict(X_recent_seq_macd)
+    y_pred_macd = model_macd_hist.predict(X_recent_seq_macd, verbose=0)
     y_pred_macd = scaler_target_macd.inverse_transform(y_pred_macd)
 
-    y_pred_rsi = model_rsi_avg.predict(X_recent_seq_rsi)
+    y_pred_rsi = model_rsi_avg.predict(X_recent_seq_rsi, verbose=0)
     y_pred_rsi = scaler_target_rsi.inverse_transform(y_pred_rsi)
 
     # 결과 출력
