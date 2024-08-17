@@ -28,7 +28,7 @@ const StrategySelect = styled.select`
 
 const ExecuteButton = styled.button`
     margin-left: 8px;
-    background-color: grey;
+    background-color: #0c0b0b;
     color: white;
     border: none;
     padding: 3px 20px;
