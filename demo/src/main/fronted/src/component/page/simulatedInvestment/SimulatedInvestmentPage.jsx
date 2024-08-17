@@ -82,7 +82,7 @@ const LogItem = styled.div`
     border-right: 1px solid black;
 `;
 
-function AutoTradingPage() {
+function SimulatedInvestmentPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
     const [selectedStrategy, setSelectedStrategy] = useState("autotrade");
     const { username } = useUser();
@@ -195,4 +195,4 @@ function AutoTradingPage() {
     );
 }
 
-export default AutoTradingPage;
+export default SimulatedInvestmentPage;

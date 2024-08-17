@@ -12,10 +12,10 @@ const Container = styled.div`
     border-bottom: 1px solid black;
 `;
 
-const Title = styled.p`
-    font-size: 40px;
-    font-weight: bold;
-`;
+// const Title = styled.p`
+//     font-size: 40px;
+//     font-weight: bold;
+// `;
 
 const NavLinks = styled.div`
     display: flex;
@@ -43,10 +43,11 @@ function Head() {
 
     return (
         <Container>
-            <Title>C.A.T</Title>
+            {/*<Title>C.A.T</Title>*/}
             <NavLinks>
-                <NavItem to="/">홈</NavItem>
+                <NavItem to="/">C.A.T</NavItem>
                 <NavItem to="/backtest" >백테스팅</NavItem>
+                <NavItem to="/simulated-investment">모의투자</NavItem>
                 <NavItem to="/auto-trading">자동매매</NavItem>
             </NavLinks>
             {isLoggedIn ? (
