@@ -229,8 +229,8 @@ def find_param_worker(args):
 def find_params(data, base, fee, ratio, lev):
     num_cores = os.cpu_count()
     # 각각 0~2.0% 사이에서 최적 지표 찾기
-    p_range = np.arange(0.000, 2.000, 0.1)
-    l_range = np.arange(0.000, 2.000, 0.1)
+    p_range = np.arange(0.500, 2.000, 0.1)
+    l_range = np.arange(0.100, 1.500, 0.1)
 
     params_list = []
     for p in p_range:
