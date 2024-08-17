@@ -181,7 +181,7 @@ function AutoTradingPage() {
                                 <LogItem>{trade.entryPrice}</LogItem>
                                 <LogItem>{trade.exitTime}</LogItem>
                                 <LogItem>{trade.exitPrice}</LogItem>
-                                <LogItem>{trade.contrat}</LogItem>
+                                <LogItem>{trade.contract}</LogItem>
                                 <LogItem>{trade.profit}</LogItem>
                                 <LogItem>{trade.deposit}</LogItem>
                             </LogItemWrapper>
