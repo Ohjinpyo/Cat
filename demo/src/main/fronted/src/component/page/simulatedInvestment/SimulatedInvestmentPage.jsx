@@ -36,9 +36,10 @@ const ExecuteButton = styled.button`
 `;
 
 const ExitButton = styled.button`
-    margin-left:8px;
-    background-color: blue;
-    color:white;
+    margin-left: 8px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
     padding: 3px 20px;
     cursor: pointer;
 `;
