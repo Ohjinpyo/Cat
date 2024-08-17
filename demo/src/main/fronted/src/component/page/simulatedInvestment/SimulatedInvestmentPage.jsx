@@ -79,6 +79,17 @@ const InputField = styled.div`
     margin-bottom: 10px;
 `;
 
+const Label = styled.label`
+    display: block;
+    margin-bottom: 5px;
+`;
+
+const Input = styled.input`
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+`;
+
 const ReloadButton = styled.button`
     margin-left: 8px;
     background-color: white;
