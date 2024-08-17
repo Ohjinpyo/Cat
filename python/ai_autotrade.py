@@ -25,11 +25,15 @@ PORT = '3306'
 DATABASE = 'backtest'
 
 # 투자 파라미터
-BALANCE = 1000000
-FEE = 0.02
-RATIO = 0.3
-LEV = 1
+# BALANCE = 1000000
+# FEE = 0.02
+# RATIO = 0.3
+# LEV = 1
 
+BALANCE = int(sys.argv[4])
+FEE = 0.02
+RATIO = float(sys.argv[5])
+LEV = int(sys.argv[6])
 
 # 거래 플래그 업데이트하는 함수
 def update_flags(df):

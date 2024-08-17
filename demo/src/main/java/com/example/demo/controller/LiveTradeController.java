@@ -29,8 +29,11 @@ public class LiveTradeController {
         String username = request.getUsername();
         User user = userService.findByUsername(username);
         String strategy = request.getStrategy();
-        //System.out.println(user.getApikey());
-        //System.out.println(user.getApisecret());
+        String capital = request.getCapital();
+        String orderSize = request.getOrderSize();
+        String leverage = request.getLeverage();
+
+
         // MySQL 데이터베이스 연결 설정
         String dbuser = "root";
         String password = "Cat2024!!";
@@ -47,7 +50,7 @@ public class LiveTradeController {
 
             // 파이썬 스크립트 실행
             String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + ".py";
-            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret());
+            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret(), capital, orderSize, leverage);
             Process process = processBuilder.start();
 
             // 실행 결과 출력

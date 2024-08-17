@@ -43,6 +43,42 @@ const ExitButton = styled.button`
     cursor: pointer;
 `;
 
+const PropertiesButton = styled.button`
+    margin-left: 8px;
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 3px 20px;
+    cursor: pointer;
+`;
+
+const Modal = styled.div`
+    display: ${({ show }) => (show ? "block" : "none")};
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid black;
+    z-index: 1000;
+`;
+
+const Overlay = styled.div`
+    display: ${({ show }) => (show ? "block" : "none")};
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+`;
+
+const InputField = styled.div`
+    margin-bottom: 10px;
+`;
+
 const ReloadButton = styled.button`
     margin-left: 8px;
     background-color: white;
@@ -85,6 +121,10 @@ const LogItem = styled.div`
 function SimulatedInvestmentPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
     const [selectedStrategy, setSelectedStrategy] = useState("autotrade");
+    const [capital, setCapital] = useState(1000000);
+    const [orderSize, setOrderSize] = useState(0.3);
+    const [leverage, setLeverage] = useState(10);
+    const [showModal, setShowModal] = useState(false);
     const { username } = useUser();
 
     const handleStrategyChange = (e) => {
@@ -95,7 +135,10 @@ function SimulatedInvestmentPage() {
     const handleExecute = () => {
         axios.post("http://3.35.17.231:8080/api/livetrades",{
             username: username,
-            strategy: selectedStrategy
+            strategy: selectedStrategy,
+            capital: capital,
+            orderSize: orderSize,
+            leverage: leverage
         })
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
@@ -117,6 +160,13 @@ function SimulatedInvestmentPage() {
             .catch(error => {
                 console.error("POST 요청 실패:", error);
             });
+    };
+    const handleOpenModal = () => {
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
     };
 
     const reloadButton = () => {
@@ -160,6 +210,7 @@ function SimulatedInvestmentPage() {
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
+                    <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
                     <ReloadButton onClick={reloadButton}><img src={reload} alt="새로고침" /></ReloadButton>
                 </ButtonContainer>
                 <LogContainer>
@@ -191,6 +242,36 @@ function SimulatedInvestmentPage() {
                     )}
                 </LogContainer>
             </ExeContainer>
+
+            <Overlay show={showModal} onClick={handleCloseModal} />
+            <Modal show={showModal}>
+                <h2>속성 설정</h2>
+                <InputField>
+                    <Label>자본금</Label>
+                    <Input
+                        type="number"
+                        value={capital}
+                        onChange={(e) => setCapital(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>오더 사이즈</Label>
+                    <Input
+                        type="number"
+                        value={orderSize}
+                        onChange={(e) => setOrderSize(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>레버리지</Label>
+                    <Input
+                        type="number"
+                        value={leverage}
+                        onChange={(e) => setLeverage(e.target.value)}
+                    />
+                </InputField>
+                <ExecuteButton onClick={handleCloseModal}>저장</ExecuteButton>
+            </Modal>
         </div>
     );
 }
