@@ -102,8 +102,8 @@ const ReloadButton = styled.button`
     align-items: center;
 
     img {
-        width: 30px; 
-        height: 30px;
+        width: 25px; 
+        height: 25px;
     }
 `;
 
