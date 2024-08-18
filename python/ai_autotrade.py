@@ -34,6 +34,10 @@ BALANCE = int(sys.argv[4])
 FEE = 0.02
 RATIO = float(sys.argv[5])
 LEV = int(sys.argv[6])
+P_START = float(sys.argv[7])
+P_END = float(sys.argv[8])
+L_START = float(sys.argv[9])
+L_END = float(sys.argv[10])
 
 # 거래 플래그 업데이트하는 함수
 def update_flags(df):
@@ -146,6 +150,7 @@ def create_table_if_not_exists(name):
             exitPrice FLOAT,
             contract FLOAT,
             profit FLOAT,
+            profitRate VARCHAR(20),
             deposit FLOAT
         )
         """
@@ -202,6 +207,7 @@ def reboot_table_if_exists(name):
             exitPrice FLOAT,
             contract FLOAT,
             profit FLOAT,
+            profitRate VARCHAR(20),
             deposit FLOAT
         )
         """
@@ -285,7 +291,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
         backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
         backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
-        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
+        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev, P_START, P_END, L_START, L_END)
         # 손익비 출력
         #print(profit_ratio, loss_ratio, flush=True)
 
@@ -363,7 +369,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         # 수익률 계산
                         profit = (exit_price - entry_price) * (1 - fee / 100) * contract
-                        profit_ratio = profit / (entry_price * contract)
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate)
                         deposit += profit
 
                         connection = mysql.connector.connect(
@@ -374,8 +381,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, deposit)
+                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
@@ -391,7 +398,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         # 수익률 계산
                         profit = (entry_price - exit_price) * (1 - fee / 100) * contract
-                        profit_ratio = profit / (entry_price * contract)
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate)
                         deposit += profit
 
                         connection = mysql.connector.connect(
@@ -402,8 +410,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (position, entry_time, entry_price, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), exit_price, contract, profit, deposit)
+                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()

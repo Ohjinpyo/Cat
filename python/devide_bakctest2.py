@@ -226,11 +226,11 @@ def find_param_worker(args):
     return winrate, p, l
 
 
-def find_params(data, base, fee, ratio, lev):
+def find_params(data, base, fee, ratio, lev, p_start, p_end, l_start, l_end):
     num_cores = os.cpu_count()
     # 각각 0~2.0% 사이에서 최적 지표 찾기
-    p_range = np.arange(0.500, 2.000, 0.1)
-    l_range = np.arange(0.100, 1.500, 0.1)
+    p_range = np.arange(p_start, p_end, 0.1)
+    l_range = np.arange(l_start, l_end, 0.1)
 
     params_list = []
     for p in p_range:
