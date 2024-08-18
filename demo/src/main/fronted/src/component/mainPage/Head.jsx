@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { useUser } from "../../UserContext";
+import Cat from "../image/Cat.png"
 
 const Container = styled.div`
     display: flex;
@@ -27,6 +28,10 @@ const NavItem = styled(NavLink)`
     font-size: 20px;
     text-decoration: none;
     color: black;
+    img {
+        width: 50px;  
+        height: 50px;
+    }
 `;
 
 const Button = styled.button`
@@ -45,7 +50,7 @@ function Head() {
         <Container>
             {/*<Title>C.A.T</Title>*/}
             <NavLinks>
-                <NavItem to="/">C.A.T</NavItem>
+                <NavItem to="/"><img src={Cat} alt="C.A.T"/></NavItem>
                 <NavItem to="/backtest" >백테스팅</NavItem>
                 <NavItem to="/simulated-investment">모의투자</NavItem>
                 <NavItem to="/auto-trading">자동매매</NavItem>
