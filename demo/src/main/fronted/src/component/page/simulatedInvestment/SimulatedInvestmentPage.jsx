@@ -132,7 +132,7 @@ const LogItem = styled.div`
 
 function SimulatedInvestmentPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
-    const [selectedStrategy, setSelectedStrategy] = useState("autotrade");
+    const [selectedStrategy, setSelectedStrategy] = useState("ai_autotrade");
     const [capital, setCapital] = useState(1000000);
     const [orderSize, setOrderSize] = useState(0.3);
     const [leverage, setLeverage] = useState(10);
@@ -149,7 +149,7 @@ function SimulatedInvestmentPage() {
 
     // 실행 버튼 클릭 시
     const handleExecute = () => {
-        axios.post("http://3.35.17.231:8080/api/livetrades",{
+        axios.post("http://3.35.17.231:8080/api/simulatedinvestments",{
             username: username,
             strategy: selectedStrategy,
             capital: capital,
@@ -171,7 +171,7 @@ function SimulatedInvestmentPage() {
     };
 
     const handleExit = () => {
-        axios.post("http://3.35.17.231:8080/api/exit",{
+        axios.post("http://3.35.17.231:8080/api/siexit",{
             username: username
         })
             .then(response => {
@@ -221,7 +221,7 @@ function SimulatedInvestmentPage() {
 
     return (
         <div>
-            <Chart />
+            {/*<Chart />*/}
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>

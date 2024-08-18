@@ -13,8 +13,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @RestController
-@RequestMapping("/api/exit")
-public class LiveTradeExitController {
+@RequestMapping("/api/siexit")
+public class SimulatedInvestmentExitController {
 
     @PostMapping
     public void exitTrading(@RequestBody RequestName request) {

@@ -1,9 +1,9 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.LiveTrade;
+import com.example.demo.model.SimulatedInvestment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface LiveTradeRepository extends JpaRepository<LiveTrade, Long> {
+public interface SimulatedInvestmentRepository extends JpaRepository<SimulatedInvestment, Long> {
 }
