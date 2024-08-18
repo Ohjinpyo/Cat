@@ -136,6 +136,10 @@ function SimulatedInvestmentPage() {
     const [capital, setCapital] = useState(1000000);
     const [orderSize, setOrderSize] = useState(0.3);
     const [leverage, setLeverage] = useState(10);
+    const [profitStart, setProfitStart] = useState(0.5);
+    const [profitEnd, setProfitEnd] = useState(2.0);
+    const [lossStart, setLossStart] = useState(0.1);
+    const [lossEnd, setLossEnd] = useState(1.0);
     const [showModal, setShowModal] = useState(false);
     const { username } = useUser();
 
@@ -150,7 +154,11 @@ function SimulatedInvestmentPage() {
             strategy: selectedStrategy,
             capital: capital,
             orderSize: orderSize,
-            leverage: leverage
+            leverage: leverage,
+            profitStart: profitStart,
+            profitEnd: profitEnd,
+            lossStart: lossStart,
+            lossEnd: lossEnd
         })
             .then(response => {
                 // 성공적으로 요청을 보냈을 때 처리할 코드
@@ -245,7 +253,7 @@ function SimulatedInvestmentPage() {
                                 <LogItem>{trade.exitTime}</LogItem>
                                 <LogItem>{trade.exitPrice}</LogItem>
                                 <LogItem>{trade.contract}</LogItem>
-                                <LogItem>{trade.profit}</LogItem>
+                                <LogItem>{trade.profit}({trade.profitRate}%)</LogItem>
                                 <LogItem>{trade.deposit}</LogItem>
                             </LogItemWrapper>
                         ))
@@ -280,6 +288,38 @@ function SimulatedInvestmentPage() {
                         type="number"
                         value={leverage}
                         onChange={(e) => setLeverage(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>익절 최소</Label>
+                    <Input
+                        type="number"
+                        value={profitStart}
+                        onChange={(e) => setProfitStart(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>익절 최대</Label>
+                    <Input
+                        type="number"
+                        value={profitEnd}
+                        onChange={(e) => setProfitEnd(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>손절 최소</Label>
+                    <Input
+                        type="number"
+                        value={lossStart}
+                        onChange={(e) => setLossStart(e.target.value)}
+                    />
+                </InputField>
+                <InputField>
+                    <Label>손절 최대</Label>
+                    <Input
+                        type="number"
+                        value={lossEnd}
+                        onChange={(e) => setLossEnd(e.target.value)}
                     />
                 </InputField>
                 <ExecuteButton onClick={handleCloseModal}>저장</ExecuteButton>

@@ -32,6 +32,10 @@ public class LiveTradeController {
         String capital = request.getCapital();
         String orderSize = request.getOrderSize();
         String leverage = request.getLeverage();
+        String profitStart = request.getProfitStart();
+        String profitEnd = request.getProfitEnd();
+        String lossStart = request.getLossStart();
+        String lossEnd = request.getLossEnd();
 
 
         // MySQL 데이터베이스 연결 설정
@@ -50,7 +54,7 @@ public class LiveTradeController {
 
             // 파이썬 스크립트 실행
             String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + ".py";
-            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret(), capital, orderSize, leverage);
+            ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret(), capital, orderSize, leverage, profitStart, profitEnd, lossStart, lossEnd);
             Process process = processBuilder.start();
 
             // 실행 결과 출력
