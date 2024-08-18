@@ -150,7 +150,7 @@ def create_table_if_not_exists(name):
             exitPrice FLOAT,
             contract FLOAT,
             profit FLOAT,
-            profitRate VARCHAR(20),
+            profitRate FLOAT,
             deposit FLOAT
         )
         """
@@ -207,7 +207,7 @@ def reboot_table_if_exists(name):
             exitPrice FLOAT,
             contract FLOAT,
             profit FLOAT,
-            profitRate VARCHAR(20),
+            profitRate FLOAT,
             deposit FLOAT
         )
         """
