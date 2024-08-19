@@ -34,6 +34,11 @@ const NavItem = styled(NavLink)`
         width: 60px;  
         height: 60px;
     }
+    span {
+        font-family: 'Arial', sans-serif;  
+        font-weight: bold;  
+        color: darkblue;  
+    }
 `;
 
 const Button = styled.button`
@@ -52,7 +57,7 @@ function Head() {
         <Container>
             {/*<Title>C.A.T</Title>*/}
             <NavLinks>
-                <NavItem to="/"><img src={Cat} alt="C.A.T"/></NavItem>
+                <NavItem to="/"><img src={Cat} alt="C.A.T"/><span>C.A.T</span></NavItem>
                 <NavItem to="/backtest" >백테스팅</NavItem>
                 <NavItem to="/simulated-investment">모의투자</NavItem>
                 <NavItem to="/auto-trading">자동매매</NavItem>
