@@ -60,7 +60,7 @@ function Head() {
             {isLoggedIn ? (
                 <Button onClick={handleLogout}>[{username}] Logout</Button>
             ) : (
-                <div>
+                <div style={{ display: 'flex', gap: '10px' }}>
                     <NavItem to="/sign-up">Sign up</NavItem>
                     <NavItem to="/login">Login</NavItem>
                 </div>
