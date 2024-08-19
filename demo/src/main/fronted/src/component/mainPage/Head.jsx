@@ -37,7 +37,7 @@ const NavItem = styled(NavLink)`
     span {
         font-family: 'Arial', sans-serif;  
         font-weight: bold;  
-        color: blue;  
+        color: black;  
     }
 `;
 
