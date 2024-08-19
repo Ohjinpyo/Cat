@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { useUser } from "../../UserContext";
-import Cat from "../image/Cat.png"
+import Cat from "../image/Cat2.png"
 
 const Container = styled.div`
     display: flex;
