@@ -1,6 +1,5 @@
 package com.example.demo.controller;
-import com.example.demo.model.LiveTrade;
-import com.example.demo.service.LiveTradeService;
+import com.example.demo.service.SimulatedInvestmentService;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.model.RequestName;
 import com.example.demo.model.User;
@@ -17,8 +16,8 @@ import java.sql.Statement;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/livetrades")
-public class LiveTradeController {
+@RequestMapping("/api/simulatedinvestments")
+public class SimulatedInvestmentController {
 
     @Autowired
     private UserService userService;
@@ -60,7 +59,7 @@ public class LiveTradeController {
             // 실행 결과 출력
 //            BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
 //            String line;
-            System.out.println("파이썬 스크립트 실행 중: 자동매매 시작");
+            System.out.println("파이썬 스크립트 실행 중: 모의투자 시작");
 //            while ((line = stdoutReader.readLine()) != null) {
 //                System.out.println(line);
 //            }

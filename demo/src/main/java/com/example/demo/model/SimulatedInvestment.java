@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 
 @Entity
-public class LiveTrade {
+public class SimulatedInvestment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
