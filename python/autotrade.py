@@ -25,6 +25,12 @@ FEE = 0.02
 RATIO = 0.3
 LEV = 1
 
+P_START = 0.100
+P_END = 2.000
+L_START = 0.100
+L_END = 1.000
+
+
 def update_flags(df):
     if len(df) < 3:
         return df
@@ -120,13 +126,17 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            datetime VARCHAR(20),
             position VARCHAR(10),
+            entryTime VARCHAR(20),
             entryPrice FLOAT,
+            exitTime VARCHAR(20),
             exitPrice FLOAT,
-            profit FLOAT
+            contract FLOAT,
+            profit FLOAT,
+            profitRate FLOAT,
+            deposit FLOAT
         )
         """
 
@@ -153,7 +163,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}livetrade"
+        query = f"DELETE FROM {name}simtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -172,13 +182,17 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            datetime VARCHAR(20),
             position VARCHAR(10),
+            entryTime VARCHAR(20),
             entryPrice FLOAT,
+            exitTime VARCHAR(20),
             exitPrice FLOAT,
-            profit FLOAT
+            contract FLOAT,
+            profit FLOAT,
+            profitRate FLOAT,
+            deposit FLOAT
         )
         """
 
@@ -208,24 +222,28 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
          })
         
         # 파라미터들
-        lookback = 50
+        lookback = 60
         backtest_lookback = 960
-        balance = BALANCE
+        deposit = BALANCE
+        ratio = RATIO
+        lev = LEV
+        fee = FEE
         position = None 
         entry_price = 0
-        trades_log = []
         timer_start = datetime.datetime.now()
         timer_end = timer_start + datetime.timedelta(days=1)
+
+        #최초의 손익비 찾기
         backtest_df = fetch_and_update_data(exchange, symbol, timeframe, backtest_lookback)
         backtest_df['RSI'] = ta.rsi(backtest_df['close'], length=14)
         backtest_df['RSI_Hist'] = backtest_df['RSI'] - ta.sma(backtest_df['RSI'], length=30)
         backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
-        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV, P_START, P_END, L_START, L_END)
         #print(profit_ratio, loss_ratio, flush=True)
         # 반복문
         while True:
-            # 손익비 찾기
+            # 24시간이 지나면 손익비 최신화
             if datetime.datetime.now() >= timer_end:
                 timer_start = datetime.datetime.now()
                 timer_end = timer_start + datetime.timedelta(days=1)
@@ -234,14 +252,14 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 backtest_df['RSI_Hist'] = backtest_df['RSI'] - ta.sma(backtest_df['RSI'], length=30)
                 backtest_df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
-                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV)
+                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, FEE, RATIO, LEV, P_START, P_END, L_START, L_END)
                 #print(profit_ratio, loss_ratio, flush=True)
 
             # 플래그 확인(데이터베이스)
             connection = mysql.connector.connect(
                 user=USER,
                 password=PASSWORD,
-                host=HOST,
+                host=HOST,  
                 port=PORT,
                 database=DATABASE
             )
@@ -265,22 +283,35 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
 
             # 포지션
             if position is None:
+                # 플래그 두개가 3틱이내에 겹치면 포지션 생성
                 if (df['RSI_Flag'].iloc[-1] == 1 or df['RSI_Flag'].iloc[-2] == 1 or df['RSI_Flag'].iloc[-3] == 1) and \
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-1]
-                    #print(f"Long position {username} entered at {entry_price}", flush=True)
+                    contract = deposit * ratio * lev / entry_price
+                    # 포지션 생성 문구 출력
+                    #print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-1]
-                    #print(f"Short position {username} entered at {entry_price}", flush=True)
+                    contract = deposit * ratio * lev / entry_price
+                    # 포지션 생성 문구 출력
+                    #print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
             else:
                 if position == 'long':
                     if df['close'].iloc[-1] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-1] <= entry_price * (1 - loss_ratio / 100):
                         exit_price = df['close'].iloc[-1]
-                        profit = (exit_price - entry_price) / entry_price  # 수익률 계산
-                        balance += profit
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        # 수익률 계산
+                        profit = (exit_price - entry_price) * (1 - fee / 100) * contract
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate * 100)
+                        deposit += profit
+
+                        # 데이터베이스에 기록
                         connection = mysql.connector.connect(
                             user=USER,
                             password=PASSWORD,
@@ -289,19 +320,29 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
+                        query = f"INSERT INTO {username}simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        #print(f"Long position exited at {exit_price} with profit {profit}", flush=True)
+
+                        # 포지션 청산 문구 출력
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
+                        entry_price = 0
+                        exit_price = 0
                 elif position == 'short':
                     if df['close'].iloc[-1] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-1] >= entry_price * (1 + loss_ratio / 100):
                         exit_price = df['close'].iloc[-1]
-                        profit = (entry_price - exit_price) / entry_price  # 수익률 계산
-                        balance += profit
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        # 수익률 계산
+                        profit = (entry_price - exit_price) * (1 - fee / 100) * contract
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate * 100)
+                        deposit += profit
+
                         connection = mysql.connector.connect(
                             user=USER,
                             password=PASSWORD,
@@ -310,21 +351,25 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (datetime, position, entryPrice, exitPrice, profit) VALUES (%s, %s, %s, %s, %s)"
-                        val = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), position, entry_price, exit_price, profit)
+                        query = f"INSERT INTO {username}simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
-                        #print(f"Short position exited at {exit_price} with profit {profit}", flush=True)
+                        
+                        # 포지션 청산 문구 출력
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
+                        entry_price = 0
+                        exit_price = 0
 
             if(position is None):
                 p = 'None'
             else:
                 p = position
             #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
-            time.sleep(30)
+            time.sleep(60)
 
         
         # # 데이터베이스에 데이터 삽입
