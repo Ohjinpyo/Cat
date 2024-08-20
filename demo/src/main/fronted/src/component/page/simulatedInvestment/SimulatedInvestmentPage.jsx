@@ -203,6 +203,7 @@ function SimulatedInvestmentPage() {
                 });
         }
     };
+    const totalProfit = tradeLogs.reduce((acc, trade) => acc + trade.profit, 0);
 
     useEffect(() => {
         if (username !== "") {
@@ -231,7 +232,7 @@ function SimulatedInvestmentPage() {
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
-                    <ReloadButton onClick={reloadButton}><img src={reload} alt="새로고침" /></ReloadButton>
+                    <ReloadButton onClick={reloadButton}><img src={reload} alt="새로고침"/></ReloadButton>
                 </ButtonContainer>
                 <LogContainer>
                     <LogItemWrapper>
@@ -261,11 +262,14 @@ function SimulatedInvestmentPage() {
                         <div>No data available</div>
                     )}
                 </LogContainer>
+                <div style={{marginTop: '20px', fontWeight: 'bold'}}>
+                    총 수익 합계: {totalProfit}
+                </div>
             </ExeContainer>
 
-            <Overlay show={showModal} onClick={handleCloseModal} />
+            <Overlay show={showModal} onClick={handleCloseModal}/>
             <Modal show={showModal}>
-                <h2>속성 설정</h2>
+            <h2>속성 설정</h2>
                 <InputField>
                     <Label>자본금</Label>
                     <Input
