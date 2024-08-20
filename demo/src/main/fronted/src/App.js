@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import styled from 'styled-components';
 
 import Head from "./component/mainPage/Head";
 import Chart from "./component/mainPage/Chart";
