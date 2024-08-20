@@ -9,12 +9,9 @@ import devide_bakctest2
 from ai import ai_test
 
 
-# NAME = sys.argv[1]
-# API_KEY = sys.argv[2]
-# API_SECRET = sys.argv[3]
-
-API_KEY = 'BBuXPScjNckeStgURfoKG1Dk5eFQVKiO7hpVfjPBZVovF0N87INWp27NbUZnqicQ'
-API_SECRET = 'JR9dho2nwoOUgWoHVnAo6lDekKfyUkemKb7RB0sMui3ladFv9ND7nPkDJVap3ukA'
+NAME = sys.argv[1]
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 SYMBOL = 'BTC/USDT'
 TIMEFRAME = '15m'
@@ -26,21 +23,19 @@ PORT = '3306'
 DATABASE = 'backtest'
 
 # 투자 파라미터
+# RATIO = 0.3
+# LEV = 1
+# P_START = 0.100
+# P_END = 2.000
+# L_START = 0.100
+# L_END = 1.000
 FEE = 0.02
-RATIO = 0.3
-LEV = 1
-P_START = 0.100
-P_END = 2.000
-L_START = 0.100
-L_END = 1.000
-# BALANCE = int(sys.argv[4])
-# FEE = 0.02
-# RATIO = float(sys.argv[5])
-# LEV = int(sys.argv[6])
-# P_START = float(sys.argv[7])
-# P_END = float(sys.argv[8])
-# L_START = float(sys.argv[9])
-# L_END = float(sys.argv[10])
+RATIO = float(sys.argv[4])
+LEV = int(sys.argv[5])
+P_START = float(sys.argv[6])
+P_END = float(sys.argv[7])
+L_START = float(sys.argv[8])
+L_END = float(sys.argv[9])
 
 # 지갑 잔고 확인
 def get_wallet():
@@ -276,6 +271,11 @@ def auto_trade(username, key, secret, symbol, timeframe):
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
          })
         
+        order_exchange = ccxt.binance({
+                    'apiKey': key,
+                    'secret': secret
+        })
+        
         # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
         df['Rsi'] = ta.rsi(df['close'], length=14)
@@ -292,7 +292,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
         # 파라미터들
         lookback = 60
         backtest_lookback = 960
-        deposit = get_wallet(exchange)
         ratio = RATIO
         lev = LEV
         fee = FEE
@@ -307,7 +306,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
         backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
         backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         backtest_df = update_flags_backtest(backtest_df)
-        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev, P_START, P_END, L_START, L_END)
+        profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, deposit, fee, ratio, lev, P_START, P_END, L_START, L_END)
         # 손익비 출력
         #print(profit_ratio, loss_ratio, flush=True)
 
@@ -322,7 +321,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
                 backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
-                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev, P_START, P_END, L_START, L_END)
+                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, deposit, fee, ratio, lev, P_START, P_END, L_START, L_END)
                 #print(profit_ratio, loss_ratio, flush=True)
 
             # 거래 상태 플래그 확인(데이터베이스)
@@ -334,7 +333,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT trading FROM User WHERE username = %s"
+            query = "SELECT at FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -344,6 +343,21 @@ def auto_trade(username, key, secret, symbol, timeframe):
             # 거래 상태 플래그가 False면 거래 중단
             if flag == False:
                 break
+
+            # 계좌 잔고 가져오기
+            deposit = get_wallet(order_exchange)
+
+            # 체결 대기 있으면 취소
+            resp = order_exchange.fetch_open_orders(
+                symbol=symbol
+            )
+            if resp:
+                cancel_resp = order_exchange.cancel_all_orders(symbol=symbol)
+
+            # 주문 청산 됐는지 확인
+            has_position = order_exchange.fetch_position(symbol=symbol)
+            if position is not None and has_position:
+                position = None
 
             # 데이터 업데이트
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
@@ -364,91 +378,87 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 if (df['RSI_Flag'].iloc[-1] == 1 or df['RSI_Flag'].iloc[-2] == 1 or df['RSI_Flag'].iloc[-3] == 1) and \
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
-                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
+                    price_tp = entry_price * (1 + profit_ratio / 100)
+                    price_sl = entry_price * (1 - loss_ratio / 100)
                     contract = deposit * ratio * lev / entry_price
-                    # 포지션 생성 문구 출력
-                    #print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
+
+                    # 포지션 진입 요청
+                    buy_order = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="LIMIT",
+                        side="buy",
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'LONG'
+                        }
+                    )
+                    buy_order_tp = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="TAKE_PROFIT_MARKET",
+                        side='sell',
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'LONG',
+                            'stopPrice' : price_tp
+                        }
+                    )
+                    buy_order_sl = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="STOP_MARKET",
+                        side='sell',
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'LONG',
+                            'stopPrice' : price_sl
+                        }
+                    )
+
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
-                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
+                    price_tp = entry_price * (1 - profit_ratio / 100)
+                    price_sl = entry_price * (1 + loss_ratio / 100)
                     contract = deposit * ratio * lev / entry_price
-                    # 포지션 생성 문구 출력
-                    #print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
-            else:
-                # 청산
-                if position == 'long':
-                    if df['close'].iloc[-2] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-2] <= entry_price * (1 - loss_ratio / 100):
-                        exit_price = df['close'].iloc[-2]
-                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                        # 수익률 계산
-                        profit = (exit_price - entry_price) * (1 - fee / 100) * contract
-                        profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
-                        deposit += profit
+                    # 포지션 진입 요청
+                    sell_order = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="LIMIT",
+                        side="sell",
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'SHORT'
+                        }
+                    )
+                    sell_order_tp = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="TAKE_PROFIT_MARKET",
+                        side='buy',
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'SHORT',
+                            'stopPrice' : price_tp
+                        }
+                    )
+                    sell_order_sl = order_exchange.create_limit_buy_order(
+                        symbol=symbol,
+                        type="STOP_MARKET",
+                        side='buy',
+                        amount=contract,
+                        price=entry_price,
+                        params={
+                            'positionSide' : 'SHORT',
+                            'stopPrice' : price_sl
+                        }
+                    )
 
-                        # 데이터베이스에 기록
-                        connection = mysql.connector.connect(
-                            user=USER,
-                            password=PASSWORD,
-                            host=HOST,
-                            port=PORT,
-                            database=DATABASE
-                        )
-                        cursor = connection.cursor()
-                        query = f"INSERT INTO {username}autotrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
-                        cursor.execute(query, val)
-                        connection.commit()
-                        cursor.close()
-                        connection.close()
-
-                        # 포지션 청산 문구 출력
-                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
-                        position = None
-                        entry_price = 0
-                        exit_price = 0
-                elif position == 'short':
-                    if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
-                        exit_price = df['close'].iloc[-2]
-                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                        # 수익률 계산
-                        profit = (entry_price - exit_price) * (1 - fee / 100) * contract
-                        profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
-                        deposit += profit
-
-                        connection = mysql.connector.connect(
-                            user=USER,
-                            password=PASSWORD,
-                            host=HOST,
-                            port=PORT,
-                            database=DATABASE
-                        )
-                        cursor = connection.cursor()
-                        query = f"INSERT INTO {username}autotrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
-                        cursor.execute(query, val)
-                        connection.commit()
-                        cursor.close()
-                        connection.close()
-                        
-                        # 포지션 청산 문구 출력
-                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
-                        position = None
-                        entry_price = 0
-                        exit_price = 0
-
-            if(position is None):
-                p = 'None'
-            else:
-                p = position
-            # 현재 시간과 포지션, entry_price 출력
-            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
             time.sleep(60)
 
@@ -466,11 +476,3 @@ if __name__ == "__main__":
     create_table_if_not_exists(NAME)
     reboot_table_if_exists(NAME)
     auto_trade(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
-
-
-
-
-exchange = ccxt.binance({
-        'apiKey': key,
-        'secret': sec
-         })

@@ -264,7 +264,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT trading FROM User WHERE username = %s"
+            query = "SELECT si FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -308,7 +308,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         # 수익률 계산
                         profit = (exit_price - entry_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
+                        profit_rate = round(profit_rate * 100, 1)
                         deposit += profit
 
                         # 데이터베이스에 기록
@@ -340,7 +340,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                         # 수익률 계산
                         profit = (entry_price - exit_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
+                        profit_rate = round(profit_rate * 100, 1)
                         deposit += profit
 
                         connection = mysql.connector.connect(
