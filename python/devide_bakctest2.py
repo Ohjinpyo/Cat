@@ -275,7 +275,7 @@ def find_params(data, base, fee, ratio, lev, p_start, p_end, l_start, l_end):
 
 
 # 쪼개서 백테스팅
-def devide_backtest(base, fee, ratio,dataframe, devide, lev):
+def devide_backtest(base, fee, ratio,dataframe, devide, lev, p_start, p_end, l_start, l_end):
     data = dataframe
     money = base
     final_result = pd.DataFrame(columns=['Type', 'EntryTime', 'EntryPrice', 'Contract', 
@@ -294,7 +294,7 @@ def devide_backtest(base, fee, ratio,dataframe, devide, lev):
             sep_data = data
 
         # 데이터 최적 승률 찾기
-        p, l = find_params(sep_data, money, fee, ratio, lev)
+        p, l = find_params(sep_data, money, fee, ratio, lev, p_start, p_end, l_start, l_end)
         # print(p, l)
         # 찾은 승률로 백테스트(다음 데이터로)
         test_data = data.loc[0:devide_standard - 1]
@@ -342,6 +342,14 @@ if __name__ == "__main__":
     b = int(sys.argv[3])
     r = float(sys.argv[4])
     l = int(sys.argv[5])
+    # p_start = float(sys.argv[6])
+    # p_end = float(sys.argv[7])
+    # l_start = float(sys.argv[8])
+    # l_end = float(sys.argv[9])
+    p_start = 0.100
+    p_end = 2.000
+    l_start = 0.100
+    l_end = 1.000
 
     fast = 12
     slow = 26
@@ -353,7 +361,7 @@ if __name__ == "__main__":
     df = get_data(start, end)
     df = get_macd(fast, slow, sig, df)
     df = get_rsi_ma(df, per, m_per)
-    result = devide_backtest(b, f, r, df, d, l)
+    result = devide_backtest(b, f, r, df, d, l, p_start, p_end, l_start, l_end)
     result = result.reset_index()
     
     save_to_database(result, 'trade')

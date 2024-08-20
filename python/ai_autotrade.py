@@ -141,7 +141,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -179,7 +179,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}livetrade"
+        query = f"DELETE FROM {name}aisimtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -198,7 +198,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -297,7 +297,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
 
         # 반복문
         while True:
-            # 24시간이 지나면 손익비 찾기
+            # 24시간이 지나면 손익비 최신화
             if datetime.datetime.now() >= timer_end:
                 timer_start = datetime.datetime.now()
                 timer_end = timer_start + datetime.timedelta(days=1)
@@ -306,7 +306,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 backtest_df['Rsi_avg'] = backtest_df['Rsi'] - ta.sma(backtest_df['Rsi'], length=30)
                 backtest_df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(backtest_df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
                 backtest_df = update_flags_backtest(backtest_df)
-                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev)
+                profit_ratio, loss_ratio = devide_bakctest2.find_params(backtest_df, BALANCE, fee, ratio, lev, P_START, P_END, L_START, L_END)
                 #print(profit_ratio, loss_ratio, flush=True)
 
             # 거래 상태 플래그 확인(데이터베이스)
@@ -367,12 +367,14 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     if df['close'].iloc[-2] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-2] <= entry_price * (1 - loss_ratio / 100):
                         exit_price = df['close'].iloc[-2]
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
                         # 수익률 계산
                         profit = (exit_price - entry_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate)
+                        profit_rate = round(profit_rate * 100)
                         deposit += profit
 
+                        # 데이터베이스에 기록
                         connection = mysql.connector.connect(
                             user=USER,
                             password=PASSWORD,
@@ -381,12 +383,13 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
+
                         # 포지션 청산 문구 출력
                         #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
@@ -396,10 +399,11 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
                         exit_price = df['close'].iloc[-2]
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
                         # 수익률 계산
                         profit = (entry_price - exit_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate)
+                        profit_rate = round(profit_rate * 100)
                         deposit += profit
 
                         connection = mysql.connector.connect(
@@ -410,12 +414,13 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
                         cursor.close()
                         connection.close()
+                        
                         # 포지션 청산 문구 출력
                         #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
                         position = None
