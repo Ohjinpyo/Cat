@@ -1,13 +1,13 @@
-import BTC from "/demo/src/main/fronted/src/component/image/BTC.png"
-import ETH from "/demo/src/main/fronted/src/component/image/BTC.png"
-import ADA from "/demo/src/main/fronted/src/component/image/BTC.png"
-import BNB from "/demo/src/main/fronted/src/component/image/BTC.png"
-import XRP from "/demo/src/main/fronted/src/component/image/BTC.png"
-import DOGE from "/demo/src/main/fronted/src/component/image/BTC.png"
-import DOT from "/demo/src/main/fronted/src/component/image/BTC.png"
-import LTC from "/demo/src/main/fronted/src/component/image/BTC.png"
-import LINK from "/demo/src/main/fronted/src/component/image/BTC.png"
-import BCH from "/demo/src/main/fronted/src/component/image/BTC.png"
+import BTC from "./../../image/BTC.png"
+import ETH from "./../../image/ETH.png"
+import ADA from "./../../image/ADA.png"
+import BNB from "./../../image/BNB.png"
+import XRP from "./../../image/XRP.png"
+import DOGE from "./../../image/DOGE.png"
+import DOT from "./../../image/DOT.gif"
+import LTC from "./../../image/LTC.png"
+import LINK from "./../../image/LINK.png"
+import BCH from "./../../image/BCH.png"
 
 const coinData = [
     { logo: BTC, name: "BTC", price: "$60,000", change: "+5%", volume: "100,000 BTC" },
