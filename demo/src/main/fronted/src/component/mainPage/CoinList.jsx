@@ -21,6 +21,10 @@ const CoinItem = styled.div`
 const CoinInfo = styled.div`
   display: flex;
   flex-direction: column;
+    img{
+        width: 30px;
+        height: 30px;
+    }
 `;
 
 const CoinName = styled.span`
