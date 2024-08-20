@@ -50,7 +50,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -88,7 +88,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}livetrade"
+        query = f"DELETE FROM {name}aisimtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -107,7 +107,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}livetrade (
+        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -165,7 +165,6 @@ def auto_trade2(username, key, secret, symbol, timeframe):
     #변수
     position = None
     time_keep= 900 # 900초==15분 포지션 유지 
-    position_time = 0 #포지션 유지한 시간 유지시간이 time_keep보다 같거나 커지면 포지션 청산
     sleep_time = 10
     persent = 0.0005
     deposit = BALANCE
@@ -184,9 +183,7 @@ def auto_trade2(username, key, secret, symbol, timeframe):
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
             })
         
-        while True:
-            start = time.time()
-
+        while True:           
             df = fetch_and_update_data(exchange, SYMBOL, TIMEFRAME, 60)
             df['Rsi'] = ta.rsi(df['close'], length=14)
             df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
@@ -224,13 +221,11 @@ def auto_trade2(username, key, secret, symbol, timeframe):
             close_diff = (y_pred_close_prev[0][0]-y_pred_close_current[0][0])/df['close'].iloc[-2]
             print(close_diff)
 
-            end=time.time()
-            position_time = end-start
-
             if close_diff <= -1*persent:
                 if position == None:
                     position = 'short'
                     entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    entry_time_check = time.time()
                     entry_price = df['close'].iloc[-1]
                     contract = deposit * ratio * lev / entry_price
 
@@ -238,40 +233,41 @@ def auto_trade2(username, key, secret, symbol, timeframe):
                 if position == None:
                     position = 'long'
                     entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    entry_time_check = time.time()
                     entry_price = df['close'].iloc[-1]
                     contract = deposit * ratio * lev / entry_price
 
-            if position_time >= time_keep:
+            if entry_time_check - time.time() >= time_keep:
                 #청산
-
                 if position == 'long':
-                        exit_price = df['close'].iloc[-1]
-                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        # 수익률 계산
-                        profit = (exit_price - entry_price) * (1 - fee / 100) * contract
-                        profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate)
-                        deposit += profit
+                    exit_price = df['close'].iloc[-1]
+                    exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    # 수익률 계산
+                    profit = (exit_price - entry_price) * (1 - fee / 100) * contract
+                    profit_rate = profit / (entry_price * contract)
+                    profit_rate = round(profit_rate)
+                    deposit += profit
 
-                        connection = mysql.connector.connect(
-                            user=USER,
-                            password=PASSWORD,
-                            host=HOST,
-                            port=PORT,
-                            database=DATABASE
-                        )
-                        cursor = connection.cursor()
-                        query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
-                        cursor.execute(query, val)
-                        connection.commit()
-                        cursor.close()
-                        connection.close()
-                        # 포지션 청산 문구 출력
-                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
-                        position = None
-                        entry_price = 0
-                        exit_price = 0
+                    connection = mysql.connector.connect(
+                        user=USER,
+                        password=PASSWORD,
+                        host=HOST,
+                        port=PORT,
+                        database=DATABASE
+                    )
+                    cursor = connection.cursor()
+                    query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
+                    cursor.execute(query, val)
+                    connection.commit()
+                    cursor.close()
+                    connection.close()
+                    # 포지션 청산 문구 출력
+                    #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                    position = None
+                    entry_price = 0
+                    exit_price = 0
+                    entry_time_check = 0
                 elif position == 'short':
                     exit_price = df['close'].iloc[-1]
                     exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -289,7 +285,7 @@ def auto_trade2(username, key, secret, symbol, timeframe):
                         database=DATABASE
                     )
                     cursor = connection.cursor()
-                    query = f"INSERT INTO {username}livetrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                     cursor.execute(query, val)
                     connection.commit()
@@ -300,6 +296,7 @@ def auto_trade2(username, key, secret, symbol, timeframe):
                     position = None
                     entry_price = 0
                     exit_price = 0
+                    entry_time_check = 0
             
             
             time.sleep(sleep_time)
