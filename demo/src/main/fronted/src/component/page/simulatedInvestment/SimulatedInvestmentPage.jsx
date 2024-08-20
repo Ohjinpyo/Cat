@@ -7,6 +7,22 @@ import reload from "../../image/reload.png";
 import catload from "../../image/Catloading.png";
 import { Line } from 'react-chartjs-2';
 
+const GraphContainer = styled.div`
+  width: 400px; 
+  height: 300px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ccc; 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+  border-radius: 10px; 
+  overflow: hidden; 
+    img{
+        max-width: 100%; 
+        max-height: 100%; 
+    }
+`;
+
 const ExeContainer = styled.div`
     width: 100%;
     display: flex;
@@ -249,15 +265,13 @@ function SimulatedInvestmentPage() {
 
     return (
         <div>
-            <div>
+            <GraphContainer>
                 {(!tradeLogs || tradeLogs.length === 0) ? (
-                    <div>
-                        <img src={catload} alt={"거래를 진행해 주세요"} />
-                    </div>
+                    <img src={catload} alt={"거래를 진행해 주세요"} />
                 ) : (
                     <Line data={getGraphData()} />
                 )}
-            </div>
+            </GraphContainer>
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
