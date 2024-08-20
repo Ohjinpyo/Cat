@@ -17,7 +17,7 @@ public class GetDataController {
     @PostMapping("/api/getdata")
     public List<SimulatedInvestment> getSimulatedInvestmentLog(@RequestBody RequestName request) {
         String username = request.getUsername();
-
-        return simulatedInvestmentService.getSimulatedInvestmentLog(username);
+        String strategy = request.getStrategy();
+        return simulatedInvestmentService.getSimulatedInvestmentLog(username, strategy);
     }
 }

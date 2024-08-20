@@ -22,7 +22,16 @@ public class User {
     private String apisecret;
 
     @Column(nullable = false)
-    private boolean trading;
+    private boolean si;
+
+    @Column(nullable = false)
+    private boolean aisi;
+
+    @Column(nullable = false)
+    private boolean gapsi;
+
+    @Column(nullable = false)
+    private boolean at;
 
     // Getters and setters
     public Long getId() {
@@ -65,7 +74,19 @@ public class User {
         this.apisecret = apisecret;
     }
 
-    public boolean isTrading() { return trading; }
+    public boolean isSi() { return si; }
 
-    public void setTrading(boolean trading) { this.trading = trading; }
+    public void setSi(boolean si) { this.si = si; }
+
+    public boolean isAisi() { return aisi; }
+
+    public void setAisi(boolean aisi) { this.aisi = aisi; }
+
+    public boolean isGapsi() { return gapsi; }
+
+    public void setGapsi(boolean gapsi) { this.gapsi = gapsi; }
+
+    public boolean isAt() { return at; }
+
+    public void setAt(boolean at) { this.at = at; }
 }

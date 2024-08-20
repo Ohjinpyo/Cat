@@ -132,7 +132,7 @@ const LogItem = styled.div`
 
 function SimulatedInvestmentPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
-    const [selectedStrategy, setSelectedStrategy] = useState("ai_autotrade");
+    const [selectedStrategy, setSelectedStrategy] = useState("ai");
     const [capital, setCapital] = useState(1000000);
     const [orderSize, setOrderSize] = useState(0.3);
     const [leverage, setLeverage] = useState(10);
@@ -172,7 +172,8 @@ function SimulatedInvestmentPage() {
 
     const handleExit = () => {
         axios.post("http://3.35.17.231:8080/api/siexit",{
-            username: username
+            username: username,
+            strategy: selectedStrategy
         })
             .then(response => {
                 console.log("POST 요청 성공:", response.data);
@@ -226,8 +227,9 @@ function SimulatedInvestmentPage() {
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
-                        <option value="autotrade">Macd+Rsi 전략</option>
-                        <option value="ai_autotrade">ai_autotrade</option>
+                        <option value="">Macd+Rsi_siminvestment</option>
+                        <option value="ai">ai_siminvestment</option>
+                        <option value="gap">gap_siminvestment</option>
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>

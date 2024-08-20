@@ -48,11 +48,11 @@ public class SimulatedInvestmentController {
             Statement statement = connection.createStatement();
 
 
-            String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + username + "'";
+            String updateFlagQuery = "UPDATE User SET " + strategy + "si = true WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 파이썬 스크립트 실행
-            String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + ".py";
+            String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + "simtrade.py";
             ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret(), capital, orderSize, leverage, profitStart, profitEnd, lossStart, lossEnd);
             Process process = processBuilder.start();
 

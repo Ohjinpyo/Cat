@@ -15,8 +15,8 @@ public class SimulatedInvestmentService {
     @Autowired
     private EntityManager entityManager;
 
-    public List<SimulatedInvestment> getSimulatedInvestmentLog(String name) {
-        String tableName = name+"aisimtrade";
+    public List<SimulatedInvestment> getSimulatedInvestmentLog(String name, String strategy) {
+        String tableName = name+strategy+"simtrade";
         String sql = "SELECT * FROM " + tableName;
         Query query = entityManager.createNativeQuery(sql, SimulatedInvestment.class);
         return query.getResultList();

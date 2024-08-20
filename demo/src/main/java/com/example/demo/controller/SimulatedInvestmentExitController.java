@@ -19,6 +19,7 @@ public class SimulatedInvestmentExitController {
     @PostMapping
     public void exitTrading(@RequestBody RequestName request) {
         String username = request.getUsername();
+        String strategy = request.getStrategy();
         // MySQL 데이터베이스 연결 설정
         String user = "root";
         String password = "Cat2024!!";
@@ -30,7 +31,7 @@ public class SimulatedInvestmentExitController {
             Statement statement = connection.createStatement();
 
             // user 테이블의 flag 값을 0으로 업데이트
-            String updateFlagQuery = "UPDATE User SET trading = false WHERE username = '" + username + "'";
+            String updateFlagQuery = "UPDATE User SET " + strategy + "si = false WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
             // 데이터베이스 연결 및 리소스 닫기
