@@ -193,7 +193,8 @@ function SimulatedInvestmentPage() {
     const reloadButton = () => {
         if (username !== "") {
             axios.post("http://3.35.17.231:8080/api/getdata", {
-                username: username
+                username: username,
+                strategy: selectedStrategy
             })
                 .then(response => {
                     console.log("GET 요청 성공:", response.data);
@@ -209,7 +210,8 @@ function SimulatedInvestmentPage() {
     useEffect(() => {
         if (username !== "") {
             axios.post("http://3.35.17.231:8080/api/getdata", {
-                username: username
+                username: username,
+                strategy: selectedStrategy
             })
                 .then(response => {
                     console.log("GET 요청 성공:", response.data);
