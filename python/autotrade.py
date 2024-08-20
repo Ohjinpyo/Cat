@@ -23,13 +23,13 @@ PORT = '3306'
 DATABASE = 'backtest'
 
 # 투자 파라미터
-# FEE = 0.02
 # RATIO = 0.3
 # LEV = 1
 # P_START = 0.100
 # P_END = 2.000
 # L_START = 0.100
 # L_END = 1.000
+FEE = 0.02
 RATIO = float(sys.argv[4])
 LEV = int(sys.argv[5])
 P_START = float(sys.argv[6])
@@ -333,7 +333,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT trading FROM User WHERE username = %s"
+            query = "SELECT at FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -459,12 +459,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         }
                     )
 
-            if(position is None):
-                p = 'None'
-            else:
-                p = position
-            # 현재 시간과 포지션, entry_price 출력
-            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
             time.sleep(60)
 

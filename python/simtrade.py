@@ -264,7 +264,7 @@ def insert_credentials_in_db(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT trading FROM User WHERE username = %s"
+            query = "SELECT si FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
