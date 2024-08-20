@@ -13,6 +13,21 @@ import LoginPage from "./component/page/login/LoginPage";
 
 import { UserProvider } from './UserContext';
 
+
+const FixedHead = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+`;
+
+const Content = styled.div`
+  padding-top: 60px; 
+`;
+
 function App() {
     const [selectedCoin, setSelectedCoin] = useState("BTC");
 
@@ -23,8 +38,10 @@ function App() {
     return (
         <UserProvider>
             <BrowserRouter>
-                <div>
+                <FixedHead>
                     <Head />
+                </FixedHead>
+                <Content>
                     <Routes>
                         <Route
                             path="/"
@@ -41,7 +58,7 @@ function App() {
                         <Route path='/sign-up' element={<SignUpPage/>}/>
                         <Route path='/login' element={<LoginPage />}/>
                     </Routes>
-                </div>
+                </Content>
             </BrowserRouter>
         </UserProvider>
     );
