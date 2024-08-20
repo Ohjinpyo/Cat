@@ -18,6 +18,7 @@ public class SimulatedInvestment {
     private float exitPrice;
     private float contract;
     private float profit;
+    private float profitRate;
     private float deposit;
 
     public Long getId() {
@@ -82,6 +83,14 @@ public class SimulatedInvestment {
 
     public void setProfit(float profit) {
         this.profit = profit;
+    }
+
+    public float getProfitRate() {
+        return profitRate;
+    }
+
+    public void setProfitRate(float profitRate) {
+        this.profitRate = profitRate;
     }
 
     public float getDeposit() {
