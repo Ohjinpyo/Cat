@@ -5,7 +5,7 @@ import axios from "axios";
 import {UserContext, useUser} from '../../../UserContext';
 import reload from "../../image/reload.png";
 import catload from "../../image/Catloading.png";
-import Line from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
 const ExeContainer = styled.div`
     width: 100%;
