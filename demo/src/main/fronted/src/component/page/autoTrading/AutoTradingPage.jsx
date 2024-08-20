@@ -91,7 +91,7 @@ const Input = styled.input`
 `;
 
 function AutoTradingPage() {
-    const [selectedStrategy, setSelectedStrategy] = useState("ai_autotrade");
+    const [selectedStrategy, setSelectedStrategy] = useState("");
     const [orderSize, setOrderSize] = useState(0.3);
     const [leverage, setLeverage] = useState(10);
     const [profitStart, setProfitStart] = useState(0.5);
@@ -150,8 +150,7 @@ function AutoTradingPage() {
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
-                        <option value="autotrade">Macd+Rsi 전략</option>
-                        <option value="ai_autotrade">ai_autotrade</option>
+                        <option value="">ai_autotrade</option>
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>

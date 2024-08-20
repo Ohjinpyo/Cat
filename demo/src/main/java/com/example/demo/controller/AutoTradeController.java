@@ -46,7 +46,7 @@ public class AutoTradeController {
             String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
-            String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + ".py";
+            String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + "autotrade.py";
             ProcessBuilder processBuilder = new ProcessBuilder("python", pythonScriptPath, username, user.getApikey(), user.getApisecret(), orderSize, leverage, profitStart, profitEnd, lossStart, lossEnd);
             Process process = processBuilder.start();
 
