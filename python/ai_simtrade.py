@@ -371,7 +371,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         # 수익률 계산
                         profit = (exit_price - entry_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
+                        profit_rate = round(profit_rate * 100, 1)
                         deposit += profit
 
                         # 데이터베이스에 기록
@@ -403,7 +403,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         # 수익률 계산
                         profit = (entry_price - exit_price) * (1 - fee / 100) * contract
                         profit_rate = profit / (entry_price * contract)
-                        profit_rate = round(profit_rate * 100)
+                        profit_rate = round(profit_rate * 100, 1)
                         deposit += profit
 
                         connection = mysql.connector.connect(
