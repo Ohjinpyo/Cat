@@ -3,7 +3,8 @@ import Chart from "../../mainPage/Chart";
 import styled from "styled-components";
 import axios from "axios";
 import {UserContext, useUser} from '../../../UserContext';
-import reload from "../../image/reload.png"
+import reload from "../../image/reload.png";
+import catload from "../../image/Catloading.png";
 
 const ExeContainer = styled.div`
     width: 100%;
@@ -207,6 +208,28 @@ function SimulatedInvestmentPage() {
     };
     const totalProfit = tradeLogs.reduce((acc, trade) => acc + trade.profit, 0);
 
+    const getGraphData = () => {
+        if (!tradeLogs || tradeLogs.length === 0) {
+            return null;
+        }
+
+        const labels = tradeLogs.map((log, index) => `Trade ${index + 1}`);
+        const data = tradeLogs.map((log) => parseFloat(log.deposit));
+
+        return {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Deposit Over Time',
+                    data: data,
+                    borderColor: 'rgba(75,192,192,1)',
+                    backgroundColor: 'rgba(75,192,192,0.2)',
+                    fill: true,
+                },
+            ],
+        };
+    };
+
     useEffect(() => {
         if (username !== "") {
             axios.post("http://3.35.17.231:8080/api/getdata", {
@@ -225,7 +248,15 @@ function SimulatedInvestmentPage() {
 
     return (
         <div>
-            {/*<Chart />*/}
+            <div>
+                {(!tradeLogs || tradeLogs.length === 0) ? (
+                    <div>
+                        <img src={catload} alt={"거래를 진행해 주세요"} />
+                    </div>
+                ) : (
+                    <Line data={getGraphData()} />
+                )}
+            </div>
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>

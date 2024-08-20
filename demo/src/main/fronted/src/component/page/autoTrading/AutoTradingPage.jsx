@@ -144,6 +144,7 @@ function AutoTradingPage() {
         setShowModal(false);
     };
 
+
     return (
         <div>
             {/*<Chart />*/}
