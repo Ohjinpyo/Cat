@@ -8,18 +8,23 @@ import catload from "../../image/Catloading.png";
 import { Line } from 'react-chartjs-2';
 
 const GraphContainer = styled.div`
-  width: 400px; 
-  height: 300px; 
+  width: 100%; 
+  height: 600px; 
   display: flex;
   justify-content: center;
   align-items: center;
   border: 1px solid #ccc; 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
-  border-radius: 10px; 
-  overflow: hidden; 
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0 auto;  
     img{
         max-width: 100%; 
         max-height: 100%; 
+    }
+    line{
+        width: 100% !important; 
+        height: 100% !important; 
     }
 `;
 
