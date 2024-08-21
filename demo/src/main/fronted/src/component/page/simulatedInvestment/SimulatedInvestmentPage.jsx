@@ -4,7 +4,7 @@ import styled from "styled-components";
 import axios from "axios";
 import {UserContext, useUser} from '../../../UserContext';
 import reload from "../../image/reload.png";
-import catload from "../../image/Catloading.png";
+import catload from "../../image/Catloading3.png";
 import { Line } from 'react-chartjs-2';
 
 const GraphContainer = styled.div`
