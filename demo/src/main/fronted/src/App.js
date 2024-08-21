@@ -26,7 +26,7 @@ const FixedHead = styled.div`
 `;
 
 const Content = styled.div`
-  padding-top: 60px; 
+  padding-top: 70px; 
 `;
 
 function App() {
