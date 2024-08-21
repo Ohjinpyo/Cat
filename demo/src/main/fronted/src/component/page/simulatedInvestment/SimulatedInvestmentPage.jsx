@@ -9,7 +9,7 @@ import { Line } from 'react-chartjs-2';
 
 const GraphContainer = styled.div`
   width: 100%; 
-  height: 600px; 
+  height: 700px; 
   display: flex;
   justify-content: center;
   align-items: center;
