@@ -235,7 +235,7 @@ function SimulatedInvestmentPage() {
             return null;
         }
 
-        const labels = tradeLogs.map((log, index) => `Trade ${index + 1}`);
+        const labels = tradeLogs.map((log, index) => `${index + 1}`);
         const data = tradeLogs.map((log) => parseFloat(log.deposit));
 
         return {
