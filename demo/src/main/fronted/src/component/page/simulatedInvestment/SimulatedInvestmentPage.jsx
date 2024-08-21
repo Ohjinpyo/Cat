@@ -250,6 +250,9 @@ function SimulatedInvestmentPage() {
         }
     };
     const totalProfit = tradeLogs.reduce((acc, trade) => acc + trade.profit, 0);
+    const winningTrades = tradeLogs.filter(trade => trade.profit > 0).length;
+    const totalTrades = tradeLogs.length;
+    const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
     const getGraphData = () => {
         if (!tradeLogs || tradeLogs.length === 0) {
@@ -363,7 +366,7 @@ function SimulatedInvestmentPage() {
                     </PaginationButton>
                 </PaginationContainer>
                 <div style={{marginTop: '20px', fontWeight: 'bold'}}>
-                    총 수익 합계: {totalProfit}
+                    총 수익 합계: {totalProfit.toFixed(1)} 승률: {winRate.toFixed(2)}%
                 </div>
             </ExeContainer>
 
