@@ -366,7 +366,7 @@ function SimulatedInvestmentPage() {
                     </PaginationButton>
                 </PaginationContainer>
                 <div style={{marginTop: '20px', fontWeight: 'bold'}}>
-                    총 수익 합계: {totalProfit.toFixed(1)} 승률: {winRate.toFixed(2)}%
+                    총 수익 합계: {totalProfit.toFixed(1)}   승률: {winRate.toFixed(2)}%
                 </div>
             </ExeContainer>
 
