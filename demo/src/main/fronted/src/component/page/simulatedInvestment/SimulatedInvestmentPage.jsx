@@ -153,6 +153,24 @@ const LogItem = styled.div`
     border-right: 1px solid black;
 `;
 
+const PaginationContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+`;
+
+const PaginationButton = styled.button`
+    margin: 0 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #ccc;
+    border: none;
+    &:disabled {
+        background-color: #f0f0f0;
+        cursor: not-allowed;
+    }
+`;
+
 function SimulatedInvestmentPage() {
     const [tradeLogs, setTradeLogs] = useState([]);
     const [selectedStrategy, setSelectedStrategy] = useState("ai");
@@ -165,6 +183,9 @@ function SimulatedInvestmentPage() {
     const [lossEnd, setLossEnd] = useState(1.0);
     const [showModal, setShowModal] = useState(false);
     const { username } = useUser();
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     const handleStrategyChange = (e) => {
         setSelectedStrategy(e.target.value);
@@ -252,6 +273,22 @@ function SimulatedInvestmentPage() {
         };
     };
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = tradeLogs.slice(indexOfFirstItem, indexOfLastItem);
+
+    const handleNextPage = () => {
+        if (indexOfLastItem < tradeLogs.length) {
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
+
     useEffect(() => {
         if (username !== "") {
             axios.post("http://3.35.17.231:8080/api/getdata", {
@@ -300,9 +337,9 @@ function SimulatedInvestmentPage() {
                         <LogItem>수익</LogItem>
                         <LogItem>잔고</LogItem>
                     </LogItemWrapper>
-                    {Array.isArray(tradeLogs) && tradeLogs.length > 0 ? (
-                        tradeLogs.map((trade, index) => (
-                            <LogItemWrapper key={index}>
+                    {Array.isArray(currentItems) && currentItems.length > 0 ? (
+                        currentItems.map((trade, index) => (
+                            <LogItemWrapper key={indexOfFirstItem + index}>
                                 <LogItem>{trade.position}</LogItem>
                                 <LogItem>{trade.entryTime}</LogItem>
                                 <LogItem>{trade.entryPrice}</LogItem>
@@ -317,6 +354,14 @@ function SimulatedInvestmentPage() {
                         <div>No data available</div>
                     )}
                 </LogContainer>
+                <PaginationContainer>
+                    <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1}>
+                        Previous
+                    </PaginationButton>
+                    <PaginationButton onClick={handleNextPage} disabled={indexOfLastItem >= tradeLogs.length}>
+                        Next
+                    </PaginationButton>
+                </PaginationContainer>
                 <div style={{marginTop: '20px', fontWeight: 'bold'}}>
                     총 수익 합계: {totalProfit}
                 </div>
