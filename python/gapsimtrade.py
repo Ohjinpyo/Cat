@@ -141,7 +141,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
+        CREATE TABLE IF NOT EXISTS {name}gapsimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -179,7 +179,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}aisimtrade"
+        query = f"DELETE FROM {name}gapsimtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -198,7 +198,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}aisimtrade (
+        CREATE TABLE IF NOT EXISTS {name}gapsimtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -318,7 +318,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT aisi FROM User WHERE username = %s"
+            query = "SELECT gapsi FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -385,7 +385,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}gapsimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -416,7 +416,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}aisimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}gapsimtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
