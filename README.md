@@ -31,7 +31,9 @@ Coin AI Trader - 웹페이지를 통해 코인 투자 관련 여러 기능들을
 3. 투자 기능 사용  
    1. 백테스팅  
    <div align=center><img src="backtest.png" height=300></div>
+   <div align=center><img src="backtest_result.png" height=377></div>
    2. 모의 투자
    <div align=center><img src="simtrade.png" height=500></div>
+   <div align=center><img src="simtrade_result.png" height=318></div>
    3. 자동 매매
    <div align=center><img src="simtrade.png" height=500></div>
