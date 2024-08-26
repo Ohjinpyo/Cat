@@ -10,12 +10,8 @@ from ai import ai_test_v2
 
 # 데이터베이스에서 이름/api키 받아오기
 NAME = sys.argv[1]
-# API_KEY = sys.argv[2]
-# API_SECRET = sys.argv[3]
-
-NAME = ''
-API_KEY = 'yz5twLkIxD7y3rGJuY04IA4PUJR0Upk9DS9jBD4oWZBg5kLJIDqIdOTLXPxvholU'
-API_SECRET = 'LE8Gqnjg6ZhxBnyERuEUe5tSpEGE656gb3VjEzIWd2NaiR1v52pzedstugvZNjG0'
+API_KEY = sys.argv[2]
+API_SECRET = sys.argv[3]
 
 # 바이낸스 api를 사용하기 위한 심볼과 봉 시간 설정
 SYMBOL = 'BTC/USDT'
