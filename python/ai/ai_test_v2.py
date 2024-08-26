@@ -32,15 +32,15 @@ API_KEY = 'yz5twLkIxD7y3rGJuY04IA4PUJR0Upk9DS9jBD4oWZBg5kLJIDqIdOTLXPxvholU'
 API_SECRET = 'LE8Gqnjg6ZhxBnyERuEUe5tSpEGE656gb3VjEzIWd2NaiR1v52pzedstugvZNjG0'
 
 # 바이낸스 거래소 객체 생성
-exchange = ccxt.binance({
-    'apiKey': API_KEY,
-    'secret': API_SECRET,
-    'enableRateLimit': True,
-    'options': {
-        'defaultType': 'future'
-    },
-    'timeout': 30000,  # 타임아웃 시간을 30초로 설정
-})
+# exchange = ccxt.binance({
+#     'apiKey': API_KEY,
+#     'secret': API_SECRET,
+#     'enableRateLimit': True,
+#     'options': {
+#         'defaultType': 'future'
+#     },
+#     'timeout': 30000,  # 타임아웃 시간을 30초로 설정
+# })
 
 # 데이터 업데이트
 # df = fetch_and_update_data(exchange, SYMBOL, TIMEFRAME, lookback=60)
