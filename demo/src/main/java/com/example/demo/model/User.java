@@ -28,6 +28,9 @@ public class User {
     private boolean aisi;
 
     @Column(nullable = false)
+    private boolean ai2si;
+
+    @Column(nullable = false)
     private boolean gapsi;
 
     @Column(nullable = false)
@@ -81,6 +84,14 @@ public class User {
     public boolean isAisi() { return aisi; }
 
     public void setAisi(boolean aisi) { this.aisi = aisi; }
+
+    public boolean isAi2si() {
+        return ai2si;
+    }
+
+    public void setAi2si(boolean ai2si) {
+        this.ai2si = ai2si;
+    }
 
     public boolean isGapsi() { return gapsi; }
 
