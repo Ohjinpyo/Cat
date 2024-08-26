@@ -363,6 +363,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
             df['Rsi'] = ta.rsi(df['close'], length=14)
             df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
             df['MovingAverage'] = ta.sma(df['close'], length=30)
+            df['Rsi_movingavg']=ta.sma(df['Rsi'], timeperiod=30)
             df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
 
             # 모델 불러오기
