@@ -250,6 +250,11 @@ def find_params(data, base, fee, ratio, lev, p_start, p_end, l_start, l_end):
             top_p = p
             top_l = l
 
+    if top_p <= 0.05:
+        top_p = 0
+    if top_l <= 0.05:
+        top_l = 0
+        
     detail_p_range = np.arange(top_p - 0.05, top_p + 0.05, 0.01)
     detail_l_range = np.arange(top_l - 0.05, top_l + 0.05, 0.01)
 
