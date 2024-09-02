@@ -323,6 +323,8 @@ function SimulatedInvestmentPage() {
                         <option value="">Macd+Rsi_siminvestment</option>
                         <option value="ai">ai_siminvestment</option>
                         <option value="ai2">ai2_siminvestment</option>
+                        <option value="ai3">ai3_siminvestment</option>
+                        <option value="ai4">ai4_siminvestment</option>
                         <option value="gap">gap_siminvestment</option>
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
