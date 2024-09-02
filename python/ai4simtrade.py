@@ -431,7 +431,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         exit_price = 0
                 elif position == 'short':
                     # if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
-                    if df['Rsi'] <= 30:
+                    if df['Rsi'].iloc[-2] <= 30:
                         exit_price = df['close'].iloc[-2]
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
