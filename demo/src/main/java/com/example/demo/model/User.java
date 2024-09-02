@@ -31,6 +31,12 @@ public class User {
     private boolean ai2si;
 
     @Column(nullable = false)
+    private boolean ai3si;
+
+    @Column(nullable = false)
+    private boolean ai4si;
+
+    @Column(nullable = false)
     private boolean gapsi;
 
     @Column(nullable = false)
@@ -100,4 +106,20 @@ public class User {
     public boolean isAt() { return at; }
 
     public void setAt(boolean at) { this.at = at; }
+
+    public boolean isAi3si() {
+        return ai3si;
+    }
+
+    public void setAi3si(boolean ai3si) {
+        this.ai3si = ai3si;
+    }
+
+    public boolean isAi4si() {
+        return ai4si;
+    }
+
+    public void setAi4si(boolean ai4si) {
+        this.ai4si = ai4si;
+    }
 }
