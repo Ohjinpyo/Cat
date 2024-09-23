@@ -38,6 +38,91 @@ P_END = float(sys.argv[8])
 L_START = float(sys.argv[9])
 L_END = float(sys.argv[10])
 
+# 거래 플래그 업데이트하는 함수
+def update_flags(df):
+    if len(df) < 3:
+        return df
+    
+    df['RSI_Flag'] = 0
+    df['MACD_Flag'] = 0
+
+    # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
+    if df['Rsi_avg'].iloc[-4] < 0 and df['Rsi_avg'].iloc[-3] > 0:
+        df.at[df.index[-3], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-4] > 0 and df['Rsi_avg'].iloc[-3] < 0:
+        df.at[df.index[-3], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-4] < 0 and df['MacdHist'].iloc[-3] > 0:
+        df.at[df.index[-3], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-4] > 0 and df['MacdHist'].iloc[-3] < 0:
+        df.at[df.index[-3], 'MACD_Flag'] = -1
+    
+    if df['Rsi_avg'].iloc[-3] < 0 and df['Rsi_avg'].iloc[-2] > 0:
+        df.at[df.index[-2], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-3] > 0 and df['Rsi_avg'].iloc[-2] < 0:
+        df.at[df.index[-2], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-3] < 0 and df['MacdHist'].iloc[-2] > 0:
+        df.at[df.index[-2], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-3] > 0 and df['MacdHist'].iloc[-2] < 0:
+        df.at[df.index[-2], 'MACD_Flag'] = -1
+
+    if df['Rsi_avg'].iloc[-2] < 0 and df['Rsi_avg'].iloc[-1] > 0:
+        df.at[df.index[-1], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-2] > 0 and df['Rsi_avg'].iloc[-1] < 0:
+        df.at[df.index[-1], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-2] < 0 and df['MacdHist'].iloc[-1] > 0:
+        df.at[df.index[-1], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-2] > 0 and df['MacdHist'].iloc[-1] < 0:
+        df.at[df.index[-1], 'MACD_Flag'] = -1
+
+    return df
+
+
+# 거래 플래그 업데이트하는 함수(백테스트용)
+def update_flags_backtest(df):
+    if len(df) < 3:
+        return df
+    
+    df['RSI_Flag'] = 0
+    df['MACD_Flag'] = 0
+
+    # 백테스트용이라 마지막3개만 찍는게 아니라 반복문돌려서 전부 찍음
+    for i in range(4, df.shape[0]):
+        # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
+        if df['Rsi_avg'].iloc[i - 4] < 0 and df['Rsi_avg'].iloc[i - 3] > 0:
+            df.at[df.index[i - 3], 'RSI_Flag'] = 1
+        elif df['Rsi_avg'].iloc[i-4] > 0 and df['Rsi_avg'].iloc[i - 3] < 0:
+            df.at[df.index[i - 3], 'RSI_Flag'] = -1
+
+        if df['MacdHist'].iloc[i-4] < 0 and df['MacdHist'].iloc[i - 3] > 0:
+            df.at[df.index[i - 3], 'MACD_Flag'] = 1
+        elif df['MacdHist'].iloc[i-4] > 0 and df['MacdHist'].iloc[i - 3] < 0:
+            df.at[df.index[i - 3], 'MACD_Flag'] = -1
+        
+        if df['Rsi_avg'].iloc[i - 3] < 0 and df['Rsi_avg'].iloc[i - 2] > 0:
+            df.at[df.index[i - 2], 'RSI_Flag'] = 1
+        elif df['Rsi_avg'].iloc[i - 3] > 0 and df['Rsi_avg'].iloc[i - 2] < 0:
+            df.at[df.index[i - 2], 'RSI_Flag'] = -1
+
+        if df['MacdHist'].iloc[i - 3] < 0 and df['MacdHist'].iloc[i - 2] > 0:
+            df.at[df.index[i - 2], 'MACD_Flag'] = 1
+        elif df['MacdHist'].iloc[i - 3] > 0 and df['MacdHist'].iloc[i - 2] < 0:
+            df.at[df.index[i - 2], 'MACD_Flag'] = -1
+
+        if df['Rsi_avg'].iloc[i - 2] < 0 and df['Rsi_avg'].iloc[i - 1] > 0:
+            df.at[df.index[i - 1], 'RSI_Flag'] = 1
+        elif df['Rsi_avg'].iloc[i - 2] > 0 and df['Rsi_avg'].iloc[i - 1] < 0:
+            df.at[df.index[i - 1], 'RSI_Flag'] = -1
+
+        if df['MacdHist'].iloc[i - 2] < 0 and df['MacdHist'].iloc[i - 1] > 0:
+            df.at[df.index[i - 1], 'MACD_Flag'] = 1
+        elif df['MacdHist'].iloc[i - 2] > 0 and df['MacdHist'].iloc[i - 1] < 0:
+            df.at[df.index[i - 1], 'MACD_Flag'] = -1
+
+    return df
+
 
 # 데이터베이스가 없으면 만들기
 def create_table_if_not_exists(name):
@@ -55,7 +140,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}ai4simtrade (
+        CREATE TABLE IF NOT EXISTS {name}ai5simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -93,7 +178,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}ai4simtrade"
+        query = f"DELETE FROM {name}ai5simtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -112,7 +197,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}ai4simtrade (
+        CREATE TABLE IF NOT EXISTS {name}ai5simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -222,7 +307,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT ai4si FROM User WHERE username = %s"
+            query = "SELECT ai5si FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -287,7 +372,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 # 청산
                 if position == 'long':
                     # if df['close'].iloc[-2] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-2] <= entry_price * (1 - loss_ratio / 100):
-                    if df['Rsi'].iloc[-2] >= 70:
+                    if df['Rsi'].iloc[-2] >= 70 or df['close'].iloc[-2] <= entry_price * 0.98:
                         exit_price = df['close'].iloc[-2]
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -306,7 +391,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}ai4simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}ai5simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -320,7 +405,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         exit_price = 0
                 elif position == 'short':
                     # if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
-                    if df['Rsi'].iloc[-2] <= 30:
+                    if df['Rsi'].iloc[-2] <= 30 or df['close'].iloc[-2] >= entry_price * 1.02:
                         exit_price = df['close'].iloc[-2]
                         exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -338,7 +423,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}ai4simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}ai5simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()

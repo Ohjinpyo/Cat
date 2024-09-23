@@ -5,16 +5,18 @@ import time
 import mysql.connector
 import datetime
 import sys
-from ai import ai_test
+from ai import ai_test_v2
 
-
+# 데이터베이스에서 이름/api키 받아오기
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
 API_SECRET = sys.argv[3]
 
+# 바이낸스 api를 사용하기 위한 심볼과 봉 시간 설정
 SYMBOL = 'BTC/USDT'
 TIMEFRAME = '15m'
 
+# 데이터베이스
 USER = 'root'
 PASSWORD = 'Cat2024!!'
 HOST = 'capstonedb.cd4co2ui6q38.ap-northeast-2.rds.amazonaws.com'
@@ -22,32 +24,19 @@ PORT = '3306'
 DATABASE = 'backtest'
 
 # 투자 파라미터
+# BALANCE = 1000000
+# FEE = 0.02
 # RATIO = 0.3
 # LEV = 1
-# P_START = 0.100
-# P_END = 2.000
-# L_START = 0.100
-# L_END = 1.000
+
+BALANCE = int(sys.argv[4])
 FEE = 0.02
-RATIO = float(sys.argv[4])
-LEV = int(sys.argv[5])
-P_START = float(sys.argv[6])
-P_END = float(sys.argv[7])
-L_START = float(sys.argv[8])
-L_END = float(sys.argv[9])
-
-# 지갑 잔고 확인
-def get_wallet():
-    exchange = ccxt.binance({
-    'apiKey': API_KEY,
-    'secret': API_SECRET,
-    })
-    # 지갑 받아오기
-    wallet = exchange.fetch_balance()
-    wallet_usdt = wallet['free'].get('USDT', 0)
-
-    return wallet_usdt
-
+RATIO = float(sys.argv[5])
+LEV = int(sys.argv[6])
+P_START = float(sys.argv[7])
+P_END = float(sys.argv[8])
+L_START = float(sys.argv[9])
+L_END = float(sys.argv[10])
 
 # 거래 플래그 업데이트하는 함수
 def update_flags(df):
@@ -107,7 +96,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}autotrade (
+        CREATE TABLE IF NOT EXISTS {name}ai6simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -145,7 +134,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}autotrade"
+        query = f"DELETE FROM {name}ai6simtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -164,7 +153,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}autotrade (
+        CREATE TABLE IF NOT EXISTS {name}ai6simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -226,32 +215,42 @@ def auto_trade(username, key, secret, symbol, timeframe):
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
          })
         
-        order_exchange = ccxt.binance({
-                    'apiKey': key,
-                    'secret': secret
-        })
-        
         # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
+        # 가격 변동
+        df['Change'] = df['close'].diff()              
+
+        # 상승분과 하락분
+        df['Gain'] = df['Change'].apply(lambda x: x if x > 0 else 0)
+        df['Loss'] = df['Change'].apply(lambda x: -x if x < 0 else 0)
+
+        # 평균 상승분과 평균 하락분 계산 (14일 기준)
+        window_length = 14
+        df['Avg_Gain'] = df['Gain'].rolling(window=window_length, min_periods=1).mean()
+        df['Avg_Loss'] = df['Loss'].rolling(window=window_length, min_periods=1).mean()
+        df['RS'] = df['Avg_Gain'] / df['Avg_Loss']
+
+        # 지표 계산
         df['Rsi'] = ta.rsi(df['close'], length=14)
         df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         df['MovingAverage'] = ta.sma(df['close'], length=30)
         df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
+        
         df = df.dropna()
         
         # 모델 최초 로드
-        model1, model2, model3 = ai_test.set_model_macd()
-        model4, model5, model6 = ai_test.set_model_rsi()
-        # #print(ai_test.get_predict(model1, model2, model3, model4, model5, model6, df))
+        model1, model2, model3 = ai_test_v2.set_model_macd()
+        model4, model5, model6 = ai_test_v2.set_model_rsi()
+        # #print(ai_test_v2.get_predict(model1, model2, model3, model4, model5, model6, df))
 
         # 파라미터들
         lookback = 60
+        deposit = BALANCE
         ratio = RATIO
         lev = LEV
         fee = FEE
         position = None 
         entry_price = 0
-        loss_ratio = 0.02
 
         # 반복문
         while True:
@@ -264,7 +263,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT at FROM User WHERE username = %s"
+            query = "SELECT ai6si FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -275,30 +274,33 @@ def auto_trade(username, key, secret, symbol, timeframe):
             if flag == False:
                 break
 
-            # 계좌 잔고 가져오기
-            deposit = get_wallet(order_exchange)
-
-            # 체결 대기 있으면 취소
-            resp = order_exchange.fetch_open_orders(
-                symbol=symbol
-            )
-            if resp:
-                cancel_resp = order_exchange.cancel_all_orders(symbol=symbol)
-
-            # 주문 청산 됐는지 확인
-            has_position = order_exchange.fetch_position(symbol=symbol)
-            if position is not None and has_position:
-                position = None
-
             # 데이터 업데이트
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
+            # 가격 변동
+            df['Change'] = df['close'].diff()              
+
+            # 상승분과 하락분
+            df['Gain'] = df['Change'].apply(lambda x: x if x > 0 else 0)
+            df['Loss'] = df['Change'].apply(lambda x: -x if x < 0 else 0)
+
+            # 평균 상승분과 평균 하락분 계산 (14일 기준)
+            window_length = 14
+            df['Avg_Gain'] = df['Gain'].rolling(window=window_length, min_periods=1).mean()
+            df['Avg_Loss'] = df['Loss'].rolling(window=window_length, min_periods=1).mean()
+            df['RS'] = df['Avg_Gain'] / df['Avg_Loss']
+
+            # 지표 계산
             df['Rsi'] = ta.rsi(df['close'], length=14)
             df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
             df['MovingAverage'] = ta.sma(df['close'], length=30)
+            df['Rsi_movingavg']=ta.sma(df['Rsi'], timeperiod=30)
             df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
-            macd_hist, rsi_hist = ai_test.get_predict(model1, model2, model3, model4, model5, model6, df)
-            predict = pd.DataFrame({'MacdHist':[macd_hist[0][0]], 'Rsi_avg':[rsi_hist[0][0]]})
+
+            # 모델 불러오기
+            macd_hist, rsi = ai_test_v2.get_predict(model1, model2, model3, model4, model5, model6, df)
+            predict = pd.DataFrame({'MacdHist':[macd_hist[0][0]], 'Rsi':[rsi[0][0]]})
             df = pd.concat([df, predict])
+            df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
             df = update_flags(df)
             # 데이터프레임 출력
             #print(df.tail(), flush=True)
@@ -309,89 +311,95 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 if (df['RSI_Flag'].iloc[-1] == 1 or df['RSI_Flag'].iloc[-2] == 1 or df['RSI_Flag'].iloc[-3] == 1) and \
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
-                    long_price_sl = entry_price * (1 - loss_ratio / 100)
                     contract = deposit * ratio * lev / entry_price
-
-                    # 포지션 진입 요청
-                    buy_order = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="LIMIT",
-                        side="buy",
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'LONG'
-                        }
-                    )
-                    if df['rsi'].iloc[-2] >= 70:
-                        buy_order_tp = order_exchange.create_limit_buy_order(
-                            symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
-                            side='sell',
-                            amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'LONG',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
-                        )
-                    buy_order_sl = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side='sell',
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'LONG',
-                            'stopPrice' : long_price_sl
-                        }
-                    )
-
+                    # 포지션 생성 문구 출력
+                    #print(f"{entry_time} : Long position {username} entered at {entry_price}, contract {contract}", flush=True)
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
+                    entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     entry_price = df['close'].iloc[-2]
-                    short_price_sl = entry_price * (1 + loss_ratio / 100)
                     contract = deposit * ratio * lev / entry_price
+                    # 포지션 생성 문구 출력
+                    #print(f"{entry_time} : Short position {username} entered at {entry_price}, contrat {contract}", flush=True)
+            else:
+                # 청산
+                if position == 'long':
+                    # if df['close'].iloc[-2] >= entry_price * (1 + profit_ratio / 100) or df['close'].iloc[-2] <= entry_price * (1 - loss_ratio / 100):
+                    if df['Rsi'].iloc[-2] >= 70:
+                        exit_price = df['close'].iloc[-2]
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    # 포지션 진입 요청
-                    sell_order = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="LIMIT",
-                        side="sell",
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'SHORT'
-                        }
-                    )
-                    if df['rsi'].iloc[-2] <= 30:
-                        sell_order_tp = order_exchange.create_limit_buy_order(
-                            symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
-                            side='buy',
-                            amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'SHORT',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
+                        # 수익률 계산
+                        profit = (exit_price - entry_price) * (1 - fee / 100) * contract
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate * 100, 1)
+                        deposit += profit
+
+                        # 데이터베이스에 기록
+                        connection = mysql.connector.connect(
+                            user=USER,
+                            password=PASSWORD,
+                            host=HOST,
+                            port=PORT,
+                            database=DATABASE
                         )
-                    sell_order_sl = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side='buy',
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'SHORT',
-                            'stopPrice' : short_price_sl
-                        }
-                    )
+                        cursor = connection.cursor()
+                        query = f"INSERT INTO {username}ai6simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
+                        cursor.execute(query, val)
+                        connection.commit()
+                        cursor.close()
+                        connection.close()
 
+                        # 포지션 청산 문구 출력
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                        position = None
+                        entry_price = 0
+                        exit_price = 0
+                elif position == 'short':
+                    # if df['close'].iloc[-2] <= entry_price * (1 - profit_ratio / 100) or df['close'].iloc[-2] >= entry_price * (1 + loss_ratio / 100):
+                    if df['Rsi'].iloc[-2] <= 30 or df['close'].iloc[-2] >= entry_price * 1.02:
+                        exit_price = df['close'].iloc[-2]
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        # 수익률 계산
+                        profit = (entry_price - exit_price) * (1 - fee / 100) * contract
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate * 100, 1)
+                        deposit += profit
+
+                        connection = mysql.connector.connect(
+                            user=USER,
+                            password=PASSWORD,
+                            host=HOST,
+                            port=PORT,
+                            database=DATABASE
+                        )
+                        cursor = connection.cursor()
+                        query = f"INSERT INTO {username}ai6simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
+                        cursor.execute(query, val)
+                        connection.commit()
+                        cursor.close()
+                        connection.close()
+                        
+                        # 포지션 청산 문구 출력
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                        position = None
+                        entry_price = 0
+                        exit_price = 0
+
+            if(position is None):
+                p = 'None'
+            else:
+                p = position
+            # 현재 시간과 포지션, entry_price 출력
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+ " " + p + ", " + str(entry_price), flush=True)
             # 1분 sleep
-            time.sleep(60)
+            time.sleep(30)
 
     except mysql.connector.Error as err:
         #print(f"Error: {err}")

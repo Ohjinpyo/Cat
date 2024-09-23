@@ -5,6 +5,7 @@ import time
 import mysql.connector
 import datetime
 import sys
+import devide_bakctest2
 from ai import ai_test_v2
 
 # 데이터베이스에서 이름/api키 받아오기
@@ -38,6 +39,47 @@ P_END = float(sys.argv[8])
 L_START = float(sys.argv[9])
 L_END = float(sys.argv[10])
 
+# 거래 플래그 업데이트하는 함수
+def update_flags(df):
+    if len(df) < 3:
+        return df
+    
+    df['RSI_Flag'] = 0
+    df['MACD_Flag'] = 0
+
+    # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
+    if df['Rsi_avg'].iloc[-4] < 0 and df['Rsi_avg'].iloc[-3] > 0:
+        df.at[df.index[-3], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-4] > 0 and df['Rsi_avg'].iloc[-3] < 0:
+        df.at[df.index[-3], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-4] < 0 and df['MacdHist'].iloc[-3] > 0:
+        df.at[df.index[-3], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-4] > 0 and df['MacdHist'].iloc[-3] < 0:
+        df.at[df.index[-3], 'MACD_Flag'] = -1
+    
+    if df['Rsi_avg'].iloc[-3] < 0 and df['Rsi_avg'].iloc[-2] > 0:
+        df.at[df.index[-2], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-3] > 0 and df['Rsi_avg'].iloc[-2] < 0:
+        df.at[df.index[-2], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-3] < 0 and df['MacdHist'].iloc[-2] > 0:
+        df.at[df.index[-2], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-3] > 0 and df['MacdHist'].iloc[-2] < 0:
+        df.at[df.index[-2], 'MACD_Flag'] = -1
+
+    if df['Rsi_avg'].iloc[-2] < 0 and df['Rsi_avg'].iloc[-1] > 0:
+        df.at[df.index[-1], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-2] > 0 and df['Rsi_avg'].iloc[-1] < 0:
+        df.at[df.index[-1], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-2] < 0 and df['MacdHist'].iloc[-1] > 0:
+        df.at[df.index[-1], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-2] > 0 and df['MacdHist'].iloc[-1] < 0:
+        df.at[df.index[-1], 'MACD_Flag'] = -1
+
+    return df
+
 
 # 데이터베이스가 없으면 만들기
 def create_table_if_not_exists(name):
@@ -55,7 +97,7 @@ def create_table_if_not_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}ai4simtrade (
+        CREATE TABLE IF NOT EXISTS {name}ai7simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -93,7 +135,7 @@ def reboot_table_if_exists(name):
         database=DATABASE
         )
         cursor = connection.cursor()
-        query = f"DELETE FROM {name}ai4simtrade"
+        query = f"DELETE FROM {name}ai7simtrade"
         cursor.execute(query)
         connection.commit()
         cursor.close()
@@ -112,7 +154,7 @@ def reboot_table_if_exists(name):
         cursor = connection.cursor()
 
         create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}ai4simtrade (
+        CREATE TABLE IF NOT EXISTS {name}ai7simtrade (
             id INT AUTO_INCREMENT PRIMARY KEY,
             position VARCHAR(10),
             entryTime VARCHAR(20),
@@ -222,7 +264,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 database=DATABASE
             )
             cursor = connection.cursor()
-            query = "SELECT ai4si FROM User WHERE username = %s"
+            query = "SELECT ai7si FROM User WHERE username = %s"
             cursor.execute(query, (username,))
             all_rows = cursor.fetchall()
             flag = bool(all_rows[0][0])
@@ -306,7 +348,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}ai4simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}ai7simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -338,7 +380,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             database=DATABASE
                         )
                         cursor = connection.cursor()
-                        query = f"INSERT INTO {username}ai4simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        query = f"INSERT INTO {username}ai7simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
                         cursor.execute(query, val)
                         connection.commit()
@@ -350,6 +392,40 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         position = None
                         entry_price = 0
                         exit_price = 0
+
+                    # 하한 2%시 손절 후 스위칭
+                    if df['close'].iloc[-2] >= entry_price * 1.02:
+                        exit_price = df['close'].iloc[-2]
+                        exit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        # 수익률 계산
+                        profit = (entry_price - exit_price) * (1 - fee / 100) * contract
+                        profit_rate = profit / (entry_price * contract)
+                        profit_rate = round(profit_rate * 100, 1)
+                        deposit += profit
+
+                        connection = mysql.connector.connect(
+                            user=USER,
+                            password=PASSWORD,
+                            host=HOST,
+                            port=PORT,
+                            database=DATABASE
+                        )
+                        cursor = connection.cursor()
+                        query = f"INSERT INTO {username}ai7simtrade (position, entryTime, entryPrice, exitTime, exitPrice, contract, profit, profitRate, deposit) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (position, entry_time, entry_price, exit_time, exit_price, contract, profit, profit_rate, deposit)
+                        cursor.execute(query, val)
+                        connection.commit()
+                        cursor.close()
+                        connection.close()
+                        
+                        # 포지션 청산 문구 출력
+                        #print(f"{exit_time} : Long position exited at {exit_price} with profit {profit}", flush=True)
+                        #스위칭
+                        position = 'long'
+                        entry_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        entry_price = df['close'].iloc[-2]
+                        contract = deposit * ratio * lev / entry_price
 
             if(position is None):
                 p = 'None'
