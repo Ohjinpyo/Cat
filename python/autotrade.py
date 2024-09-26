@@ -310,7 +310,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
                     entry_price = df['close'].iloc[-2]
-                    long_price_sl = entry_price * (1 - loss_ratio / 100)
+                    long_price_sl = entry_price * (1 - loss_ratio)
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
@@ -339,7 +339,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
                     entry_price = df['close'].iloc[-2]
-                    short_price_sl = entry_price * (1 + loss_ratio / 100)
+                    short_price_sl = entry_price * (1 + loss_ratio)
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
@@ -364,7 +364,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             'stopPrice' : short_price_sl
                         }
                     )
-                    
+
             elif position == 'long':
                 if df['rsi'].iloc[-2] >= 70:
                         buy_order_tp = order_exchange.create_limit_buy_order(
