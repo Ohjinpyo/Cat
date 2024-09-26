@@ -324,18 +324,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             'positionSide' : 'LONG'
                         }
                     )
-                    if df['rsi'].iloc[-2] >= 70:
-                        buy_order_tp = order_exchange.create_limit_buy_order(
-                            symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
-                            side='sell',
-                            amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'LONG',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
-                        )
                     buy_order_sl = order_exchange.create_limit_buy_order(
                         symbol=symbol,
                         type="STOP_MARKET",
@@ -347,7 +335,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             'stopPrice' : long_price_sl
                         }
                     )
-
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
@@ -366,18 +353,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             'positionSide' : 'SHORT'
                         }
                     )
-                    if df['rsi'].iloc[-2] <= 30:
-                        sell_order_tp = order_exchange.create_limit_buy_order(
-                            symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
-                            side='buy',
-                            amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'SHORT',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
-                        )
                     sell_order_sl = order_exchange.create_limit_buy_order(
                         symbol=symbol,
                         type="STOP_MARKET",
@@ -389,9 +364,36 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             'stopPrice' : short_price_sl
                         }
                     )
+                    
+            elif position == 'long':
+                if df['rsi'].iloc[-2] >= 70:
+                        buy_order_tp = order_exchange.create_limit_buy_order(
+                            symbol=symbol,
+                            type="TAKE_PROFIT_MARKET",
+                            side='sell',
+                            amount=contract,
+                            price=entry_price,
+                            params={
+                                'positionSide' : 'LONG',
+                                'stopPrice' : df['close'].iloc[-2]
+                            }
+                        )
+            elif position == 'short':
+                if df['rsi'].iloc[-2] <= 30:
+                        sell_order_tp = order_exchange.create_limit_buy_order(
+                            symbol=symbol,
+                            type="TAKE_PROFIT_MARKET",
+                            side='buy',
+                            amount=contract,
+                            price=entry_price,
+                            params={
+                                'positionSide' : 'SHORT',
+                                'stopPrice' : df['close'].iloc[-2]
+                            }
+                        )
 
-            # 1분 sleep
-            time.sleep(60)
+            # sleep
+            time.sleep(30)
 
     except mysql.connector.Error as err:
         #print(f"Error: {err}")

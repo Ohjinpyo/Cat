@@ -39,6 +39,48 @@ L_START = float(sys.argv[9])
 L_END = float(sys.argv[10])
 
 
+# 거래 플래그 업데이트하는 함수
+def update_flags(df):
+    if len(df) < 3:
+        return df
+    
+    df['RSI_Flag'] = 0
+    df['MACD_Flag'] = 0
+
+    # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
+    if df['Rsi_avg'].iloc[-4] < 0 and df['Rsi_avg'].iloc[-3] > 0:
+        df.at[df.index[-3], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-4] > 0 and df['Rsi_avg'].iloc[-3] < 0:
+        df.at[df.index[-3], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-4] < 0 and df['MacdHist'].iloc[-3] > 0:
+        df.at[df.index[-3], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-4] > 0 and df['MacdHist'].iloc[-3] < 0:
+        df.at[df.index[-3], 'MACD_Flag'] = -1
+    
+    if df['Rsi_avg'].iloc[-3] < 0 and df['Rsi_avg'].iloc[-2] > 0:
+        df.at[df.index[-2], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-3] > 0 and df['Rsi_avg'].iloc[-2] < 0:
+        df.at[df.index[-2], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-3] < 0 and df['MacdHist'].iloc[-2] > 0:
+        df.at[df.index[-2], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-3] > 0 and df['MacdHist'].iloc[-2] < 0:
+        df.at[df.index[-2], 'MACD_Flag'] = -1
+
+    if df['Rsi_avg'].iloc[-2] < 0 and df['Rsi_avg'].iloc[-1] > 0:
+        df.at[df.index[-1], 'RSI_Flag'] = 1
+    elif df['Rsi_avg'].iloc[-2] > 0 and df['Rsi_avg'].iloc[-1] < 0:
+        df.at[df.index[-1], 'RSI_Flag'] = -1
+
+    if df['MacdHist'].iloc[-2] < 0 and df['MacdHist'].iloc[-1] > 0:
+        df.at[df.index[-1], 'MACD_Flag'] = 1
+    elif df['MacdHist'].iloc[-2] > 0 and df['MacdHist'].iloc[-1] < 0:
+        df.at[df.index[-1], 'MACD_Flag'] = -1
+
+    return df
+
+
 # 데이터베이스가 없으면 만들기
 def create_table_if_not_exists(name):
     try:
