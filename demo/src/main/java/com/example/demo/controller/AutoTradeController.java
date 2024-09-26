@@ -13,7 +13,7 @@ import java.sql.Statement;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/autotrades")
+@RequestMapping("/api/autotradings")
 public class AutoTradeController {
 
     @Autowired
@@ -43,7 +43,7 @@ public class AutoTradeController {
             Statement statement = connection.createStatement();
 
             // 자동매매 flag 추가해야함
-            String updateFlagQuery = "UPDATE User SET trading = true WHERE username = '" + username + "'";
+            String updateFlagQuery = "UPDATE User SET " + strategy + "at = true WHERE username = '" + username + "'";
             statement.executeUpdate(updateFlagQuery);
 
             String pythonScriptPath = "/home/ec2-user/ttttt/python/" + strategy + "autotrade.py";
