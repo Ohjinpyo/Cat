@@ -126,7 +126,8 @@ function AutoTradingPage() {
 
     const handleExit = () => {
         axios.post("http://3.35.17.231:8080/api/atexit",{
-            username: username
+            username: username,
+            strategy: selectedStrategy
         })
             .then(response => {
                 console.log("POST 요청 성공:", response.data);
