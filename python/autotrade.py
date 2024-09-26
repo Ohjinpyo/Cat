@@ -338,7 +338,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     )
 
             elif position == 'long':
-                if df['rsi'].iloc[-2] >= 70:
+                if df['Rsi'].iloc[-2] >= 70:
                         buy_order_close = exchange.create_order(
                             symbol=symbol,
                             type="LIMIT",
@@ -350,7 +350,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         position = None
 
             elif position == 'short':
-                if df['rsi'].iloc[-2] <= 30:
+                if df['Rsi'].iloc[-2] <= 30:
                         sell_order_close = exchange.create_order(
                             symbol=symbol,
                             type="LIMIT",
