@@ -13,7 +13,7 @@ import java.sql.Statement;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/autotrades")
+@RequestMapping("/api/autotradings")
 public class AutoTradeController {
 
     @Autowired
