@@ -247,7 +247,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
         ratio = RATIO
         lev = LEV
         fee = FEE
-        position = None 
         entry_price = 0
         loss_ratio = 0.02
 
@@ -285,8 +284,11 @@ def auto_trade(username, key, secret, symbol, timeframe):
 
             # 주문 청산 됐는지 확인
             has_position = exchange.fetch_positions(symbols=[symbol])
-            if position is not None and has_position:
+            if has_position:
+                position = has_position[0]['side']
+            else:
                 position = None
+
 
             # 데이터 업데이트
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
@@ -345,6 +347,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             price=df['close'].iloc[-2],
                             params={"postOnly": True}  # post-only로 설정
                         )
+                        position = None
 
             elif position == 'short':
                 if df['rsi'].iloc[-2] <= 30:
@@ -356,6 +359,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             price=df['close'].iloc[-2],
                             params={"postOnly": True}  # post-only로 설정
                         )
+                        position = None
 
             # sleep
             time.sleep(30)
