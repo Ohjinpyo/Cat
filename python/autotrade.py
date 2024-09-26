@@ -41,6 +41,9 @@ def get_wallet():
     exchange = ccxt.binance({
     'apiKey': API_KEY,
     'secret': API_SECRET,
+    'options': {
+        'defaultType': 'future'
+    },
     })
     # 지갑 받아오기
     wallet = exchange.fetch_balance()
@@ -276,7 +279,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 break
 
             # 계좌 잔고 가져오기
-            deposit = get_wallet(order_exchange)
+            deposit = get_wallet()
 
             # 체결 대기 있으면 취소
             resp = order_exchange.fetch_open_orders(
@@ -286,7 +289,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 cancel_resp = order_exchange.cancel_all_orders(symbol=symbol)
 
             # 주문 청산 됐는지 확인
-            has_position = order_exchange.fetch_position(symbol=symbol)
+            has_position = order_exchange.fetch_positions(symbols=[symbol])
             if position is not None and has_position:
                 position = None
 
