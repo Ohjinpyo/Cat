@@ -249,6 +249,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
         fee = FEE
         entry_price = 0
         loss_ratio = 0.02
+        position = None
 
         # 반복문
         while True:
@@ -286,10 +287,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
             has_position = exchange.fetch_positions(symbols=[symbol])
             if has_position:
                 position = has_position[0]['side']
-            else:
-                position = None
-
-
+                contract = abs(float(has_position[0]['info']['positionAmt']))
+                
             # 데이터 업데이트
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
             df['Rsi'] = ta.rsi(df['close'], length=14)
