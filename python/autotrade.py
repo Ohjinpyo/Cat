@@ -229,11 +229,6 @@ def auto_trade(username, key, secret, symbol, timeframe):
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
          })
         
-        order_exchange = ccxt.binance({
-                    'apiKey': key,
-                    'secret': secret
-        })
-        
         # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
         df['Rsi'] = ta.rsi(df['close'], length=14)
@@ -282,14 +277,14 @@ def auto_trade(username, key, secret, symbol, timeframe):
             deposit = get_wallet()
 
             # 체결 대기 있으면 취소
-            resp = order_exchange.fetch_open_orders(
+            resp = exchange.fetch_open_orders(
                 symbol=symbol
             )
             if resp:
-                cancel_resp = order_exchange.cancel_all_orders(symbol=symbol)
+                cancel_resp = exchange.cancel_all_orders(symbol=symbol)
 
             # 주문 청산 됐는지 확인
-            has_position = order_exchange.fetch_positions(symbols=[symbol])
+            has_position = exchange.fetch_positions(symbols=[symbol])
             if position is not None and has_position:
                 position = None
 
@@ -313,86 +308,53 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
                     position = 'long'
                     entry_price = df['close'].iloc[-2]
-                    long_price_sl = entry_price * (1 - loss_ratio)
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
-                    buy_order = order_exchange.create_limit_buy_order(
+                    buy_order = exchange.create_order(
                         symbol=symbol,
                         type="LIMIT",
                         side="buy",
                         amount=contract,
                         price=entry_price,
-                        params={
-                            'positionSide' : 'LONG'
-                        }
-                    )
-                    buy_order_sl = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side='sell',
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'LONG',
-                            'stopPrice' : long_price_sl
-                        }
+                        params={"postOnly": True}  # post-only로 설정
                     )
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
                     position = 'short'
                     entry_price = df['close'].iloc[-2]
-                    short_price_sl = entry_price * (1 + loss_ratio)
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
-                    sell_order = order_exchange.create_limit_buy_order(
+                    sell_order = exchange.create_order(
                         symbol=symbol,
                         type="LIMIT",
                         side="sell",
                         amount=contract,
                         price=entry_price,
-                        params={
-                            'positionSide' : 'SHORT'
-                        }
-                    )
-                    sell_order_sl = order_exchange.create_limit_buy_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side='buy',
-                        amount=contract,
-                        price=entry_price,
-                        params={
-                            'positionSide' : 'SHORT',
-                            'stopPrice' : short_price_sl
-                        }
+                        params={"postOnly": True}  # post-only로 설정
                     )
 
             elif position == 'long':
                 if df['rsi'].iloc[-2] >= 70:
-                        buy_order_tp = order_exchange.create_limit_buy_order(
+                        buy_order_close = exchange.create_order(
                             symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
+                            type="LIMIT",
                             side='sell',
                             amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'LONG',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
+                            price=df['close'].iloc[-2],
+                            params={"postOnly": True}  # post-only로 설정
                         )
+
             elif position == 'short':
                 if df['rsi'].iloc[-2] <= 30:
-                        sell_order_tp = order_exchange.create_limit_buy_order(
+                        sell_order_close = exchange.create_order(
                             symbol=symbol,
-                            type="TAKE_PROFIT_MARKET",
+                            type="LIMIT",
                             side='buy',
                             amount=contract,
-                            price=entry_price,
-                            params={
-                                'positionSide' : 'SHORT',
-                                'stopPrice' : df['close'].iloc[-2]
-                            }
+                            price=df['close'].iloc[-2],
+                            params={"postOnly": True}  # post-only로 설정
                         )
 
             # sleep
