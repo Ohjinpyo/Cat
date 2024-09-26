@@ -80,50 +80,6 @@ def update_flags(df):
     return df
 
 
-# 거래 플래그 업데이트하는 함수(백테스트용)
-def update_flags_backtest(df):
-    if len(df) < 3:
-        return df
-    
-    df['RSI_Flag'] = 0
-    df['MACD_Flag'] = 0
-
-    # 백테스트용이라 마지막3개만 찍는게 아니라 반복문돌려서 전부 찍음
-    for i in range(4, df.shape[0]):
-        # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
-        if df['Rsi_avg'].iloc[i - 4] < 0 and df['Rsi_avg'].iloc[i - 3] > 0:
-            df.at[df.index[i - 3], 'RSI_Flag'] = 1
-        elif df['Rsi_avg'].iloc[i-4] > 0 and df['Rsi_avg'].iloc[i - 3] < 0:
-            df.at[df.index[i - 3], 'RSI_Flag'] = -1
-
-        if df['MacdHist'].iloc[i-4] < 0 and df['MacdHist'].iloc[i - 3] > 0:
-            df.at[df.index[i - 3], 'MACD_Flag'] = 1
-        elif df['MacdHist'].iloc[i-4] > 0 and df['MacdHist'].iloc[i - 3] < 0:
-            df.at[df.index[i - 3], 'MACD_Flag'] = -1
-        
-        if df['Rsi_avg'].iloc[i - 3] < 0 and df['Rsi_avg'].iloc[i - 2] > 0:
-            df.at[df.index[i - 2], 'RSI_Flag'] = 1
-        elif df['Rsi_avg'].iloc[i - 3] > 0 and df['Rsi_avg'].iloc[i - 2] < 0:
-            df.at[df.index[i - 2], 'RSI_Flag'] = -1
-
-        if df['MacdHist'].iloc[i - 3] < 0 and df['MacdHist'].iloc[i - 2] > 0:
-            df.at[df.index[i - 2], 'MACD_Flag'] = 1
-        elif df['MacdHist'].iloc[i - 3] > 0 and df['MacdHist'].iloc[i - 2] < 0:
-            df.at[df.index[i - 2], 'MACD_Flag'] = -1
-
-        if df['Rsi_avg'].iloc[i - 2] < 0 and df['Rsi_avg'].iloc[i - 1] > 0:
-            df.at[df.index[i - 1], 'RSI_Flag'] = 1
-        elif df['Rsi_avg'].iloc[i - 2] > 0 and df['Rsi_avg'].iloc[i - 1] < 0:
-            df.at[df.index[i - 1], 'RSI_Flag'] = -1
-
-        if df['MacdHist'].iloc[i - 2] < 0 and df['MacdHist'].iloc[i - 1] > 0:
-            df.at[df.index[i - 1], 'MACD_Flag'] = 1
-        elif df['MacdHist'].iloc[i - 2] > 0 and df['MacdHist'].iloc[i - 1] < 0:
-            df.at[df.index[i - 1], 'MACD_Flag'] = -1
-
-    return df
-
-
 # 데이터베이스가 없으면 만들기
 def create_table_if_not_exists(name):
     try:
