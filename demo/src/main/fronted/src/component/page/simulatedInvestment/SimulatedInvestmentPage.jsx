@@ -325,6 +325,9 @@ function SimulatedInvestmentPage() {
                         <option value="ai2">ai2_siminvestment</option>
                         <option value="ai3">ai3_siminvestment</option>
                         <option value="ai4">ai4_siminvestment</option>
+                        <option value="ai5">ai5_siminvestment</option>
+                        <option value="ai6">ai6_siminvestment</option>
+                        <option value="ai7">ai7_siminvestment</option>
                         <option value="gap">gap_siminvestment</option>
                     </StrategySelect>
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
