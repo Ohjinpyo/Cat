@@ -5,8 +5,7 @@ import time
 import mysql.connector
 import datetime
 import sys
-from ai import ai_test
-
+from ai import ai_test_v2
 
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
@@ -94,106 +93,6 @@ def update_flags(df):
     return df
 
 
-# 데이터베이스가 없으면 만들기
-def create_table_if_not_exists(name):
-    try:
-        # 데이터베이스 연결
-        connection = mysql.connector.connect(
-            user=USER,
-            password=PASSWORD,
-            host=HOST,
-            port=PORT,
-            database=DATABASE
-        )
-
-        # 커서 생성
-        cursor = connection.cursor()
-
-        create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}autotrade (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            position VARCHAR(10),
-            entryTime VARCHAR(20),
-            entryPrice FLOAT,
-            exitTime VARCHAR(20),
-            exitPrice FLOAT,
-            contract FLOAT,
-            profit FLOAT,
-            profitRate FLOAT,
-            deposit FLOAT
-        )
-        """
-
-        # 테이블 생성
-        cursor.execute(create_table_query_user_livetrade)
-
-    except mysql.connector.Error as err:
-        pass
-        #print(f"Error: {err}")
-
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-
-
-#데이터베이스가 이미 있으면 초기화
-def reboot_table_if_exists(name):
-    try:
-        connection = mysql.connector.connect(
-        user=USER,
-        password=PASSWORD,
-        host=HOST,
-        port=PORT,
-        database=DATABASE
-        )
-        cursor = connection.cursor()
-        query = f"DELETE FROM {name}autotrade"
-        cursor.execute(query)
-        connection.commit()
-        cursor.close()
-        connection.close()
-
-        # 데이터베이스 연결
-        connection = mysql.connector.connect(
-            user=USER,
-            password=PASSWORD,
-            host=HOST,
-            port=PORT,
-            database=DATABASE
-        )
-
-        # 커서 생성
-        cursor = connection.cursor()
-
-        create_table_query_user_livetrade = f"""
-        CREATE TABLE IF NOT EXISTS {name}autotrade (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            position VARCHAR(10),
-            entryTime VARCHAR(20),
-            entryPrice FLOAT,
-            exitTime VARCHAR(20),
-            exitPrice FLOAT,
-            contract FLOAT,
-            profit FLOAT,
-            profitRate FLOAT,
-            deposit FLOAT
-        )
-        """
-
-        # 테이블 생성
-        cursor.execute(create_table_query_user_livetrade)
-
-    except mysql.connector.Error as err:
-        #print(f"Error: {err}")
-        pass
-
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-
-
 # 바이낸스에서 차트 데이터 받아오기
 def fetch_candles(exchange, symbol, timeframe, limit):
     max_retries = 5
@@ -231,24 +130,37 @@ def auto_trade(username, key, secret, symbol, timeframe):
         
         # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
+        # 가격 변동
+        df['Change'] = df['close'].diff()              
+
+        # 상승분과 하락분
+        df['Gain'] = df['Change'].apply(lambda x: x if x > 0 else 0)
+        df['Loss'] = df['Change'].apply(lambda x: -x if x < 0 else 0)
+
+        # 평균 상승분과 평균 하락분 계산 (14일 기준)
+        window_length = 14
+        df['Avg_Gain'] = df['Gain'].rolling(window=window_length, min_periods=1).mean()
+        df['Avg_Loss'] = df['Loss'].rolling(window=window_length, min_periods=1).mean()
+        df['RS'] = df['Avg_Gain'] / df['Avg_Loss']
+
+        # 지표 계산
         df['Rsi'] = ta.rsi(df['close'], length=14)
         df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
         df['MovingAverage'] = ta.sma(df['close'], length=30)
         df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
+        
         df = df.dropna()
         
         # 모델 최초 로드
-        model1, model2, model3 = ai_test.set_model_macd()
-        model4, model5, model6 = ai_test.set_model_rsi()
-        # #print(ai_test.get_predict(model1, model2, model3, model4, model5, model6, df))
+        model1, model2, model3 = ai_test_v2.set_model_macd()
+        model4, model5, model6 = ai_test_v2.set_model_rsi()
+        # #print(ai_test_v2.get_predict(model1, model2, model3, model4, model5, model6, df))
 
         # 파라미터들
         lookback = 60
         ratio = RATIO
         lev = LEV
-        fee = FEE
         entry_price = 0
-        loss_ratio = 0.02
         position = None
 
         # 반복문
@@ -291,13 +203,31 @@ def auto_trade(username, key, secret, symbol, timeframe):
                 
             # 데이터 업데이트
             df = fetch_and_update_data(exchange, symbol, timeframe, lookback)
+            # 가격 변동
+            df['Change'] = df['close'].diff()              
+
+            # 상승분과 하락분
+            df['Gain'] = df['Change'].apply(lambda x: x if x > 0 else 0)
+            df['Loss'] = df['Change'].apply(lambda x: -x if x < 0 else 0)
+
+            # 평균 상승분과 평균 하락분 계산 (14일 기준)
+            window_length = 14
+            df['Avg_Gain'] = df['Gain'].rolling(window=window_length, min_periods=1).mean()
+            df['Avg_Loss'] = df['Loss'].rolling(window=window_length, min_periods=1).mean()
+            df['RS'] = df['Avg_Gain'] / df['Avg_Loss']
+
+            # 지표 계산
             df['Rsi'] = ta.rsi(df['close'], length=14)
             df[['Macd', 'MacdSignal', 'MacdHist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
             df['MovingAverage'] = ta.sma(df['close'], length=30)
+            df['Rsi_movingavg']=ta.sma(df['Rsi'], timeperiod=30)
             df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
-            macd_hist, rsi_hist = ai_test.get_predict(model1, model2, model3, model4, model5, model6, df)
-            predict = pd.DataFrame({'MacdHist':[macd_hist[0][0]], 'Rsi_avg':[rsi_hist[0][0]]})
+
+            # 모델 불러오기
+            macd_hist, rsi = ai_test_v2.get_predict(model1, model2, model3, model4, model5, model6, df)
+            predict = pd.DataFrame({'MacdHist':[macd_hist[0][0]], 'Rsi':[rsi[0][0]]})
             df = pd.concat([df, predict])
+            df['Rsi_avg'] = df['Rsi'] - ta.sma(df['Rsi'], length=30)
             df = update_flags(df)
             # 데이터프레임 출력
             #print(df.tail(), flush=True)
@@ -374,6 +304,4 @@ def auto_trade(username, key, secret, symbol, timeframe):
 
 
 if __name__ == "__main__":
-    create_table_if_not_exists(NAME)
-    reboot_table_if_exists(NAME)
     auto_trade(NAME, API_KEY, API_SECRET, SYMBOL, TIMEFRAME)
