@@ -256,8 +256,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         type="STOP_MARKET",
                         side="sell",
                         amount=contract,
-                        price=buy_sl,
-                        params={'stopPrice': 19700}  # post-only로 설정
+                        params={'stopPrice': buy_sl}  # 로스 설정
                     )
 
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
@@ -281,8 +280,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         type="STOP_MARKET",
                         side="buy",
                         amount=contract,
-                        price=sell_sl,
-                        params={'stopPrice': 19700}  # post-only로 설정
+                        params={'stopPrice': sell_sl}  # 로스 설정
                     )
 
             elif position == 'long':
