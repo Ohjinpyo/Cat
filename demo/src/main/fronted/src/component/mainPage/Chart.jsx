@@ -80,7 +80,7 @@ const Chart = () => {
     useEffect(() => {
         const fetchData = async (year) => {
             try {
-                const response = await fetch(`http://3.35.17.231:8080/api/data/${year}`);
+                const response = await fetch(`http://3.35.65.112:8080/api/data/${year}`);
                 const data = await response.json();
 
                 const candlestickData = data.map(entry => ({
