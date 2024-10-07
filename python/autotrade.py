@@ -8,7 +8,7 @@ import sys
 from ai import ai_test_v2
 from knockknock import slack_sender
 
-webhook_url = "https://hooks.slack.com/services/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"
+webhook_url = 'https://hooks.slack.com/services/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'
 
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
@@ -119,7 +119,7 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 
 # 메인 함수
-@slack_sender(webhook_url=webhook_url, channel="#alram")
+@slack_sender(webhook_url=webhook_url, channel="#alarm3")
 def auto_trade(username, key, secret, symbol, timeframe):
     try:
         exchange = ccxt.binance({
