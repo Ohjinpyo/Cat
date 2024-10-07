@@ -8,7 +8,7 @@ import sys
 from ai import ai_test_v2
 from knockknock import slack_sender
 
-webhook_url = 'https://hooks.slack.com/services/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'
+webhook_url = 'https://hooks.slack.com/services/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'
 
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
