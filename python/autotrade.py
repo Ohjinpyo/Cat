@@ -289,27 +289,33 @@ def auto_trade(username, key, secret, symbol, timeframe):
 
             elif position == 'long':
                 if df['Rsi'].iloc[-2] >= 70:
-                        buy_order_close = exchange.create_order(
-                            symbol=symbol,
-                            type="LIMIT",
-                            side='sell',
-                            amount=contract,
-                            price=df['close'].iloc[-2],
-                            params={"postOnly": True}  # post-only로 설정
-                        )
-                        position = None
+                        try:
+                            buy_order_close = exchange.create_order(
+                                symbol=symbol,
+                                type="LIMIT",
+                                side='sell',
+                                amount=contract,
+                                price=df['close'].iloc[-2],
+                                params={"postOnly": True}  # post-only로 설정
+                            )
+                            position = None
+                        except Exception:
+                            pass
 
             elif position == 'short':
                 if df['Rsi'].iloc[-2] <= 30:
-                        sell_order_close = exchange.create_order(
-                            symbol=symbol,
-                            type="LIMIT",
-                            side='buy',
-                            amount=contract,
-                            price=df['close'].iloc[-2],
-                            params={"postOnly": True}  # post-only로 설정
-                        )
-                        position = None
+                        try:
+                            sell_order_close = exchange.create_order(
+                                symbol=symbol,
+                                type="LIMIT",
+                                side='buy',
+                                amount=contract,
+                                price=df['close'].iloc[-2],
+                                params={"postOnly": True}  # post-only로 설정
+                            )
+                            position = None
+                        except Exception:
+                            pass
 
             # sleep
             time.sleep(30)
