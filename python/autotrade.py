@@ -6,6 +6,9 @@ import mysql.connector
 import datetime
 import sys
 from ai import ai_test_v2
+from knockknock import slack_sender
+
+webhook_url = "https://hooks.slack.com/services/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"
 
 NAME = sys.argv[1]
 API_KEY = sys.argv[2]
@@ -116,6 +119,7 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 
 # 메인 함수
+@slack_sender(webhook_url=webhook_url, channel="#alram")
 def auto_trade(username, key, secret, symbol, timeframe):
     try:
         exchange = ccxt.binance({
