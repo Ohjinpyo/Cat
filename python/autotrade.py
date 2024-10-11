@@ -119,7 +119,7 @@ def fetch_and_update_data(exchange, symbol, timeframe, lookback):
 
 
 # 메인 함수
-@slack_sender(webhook_url=webhook_url, channel="#alarm3")
+@slack_sender(webhook_url=webhook_url, channel="#alarm3") # 알람을 슬랙으로 받기 위한 어노테이션
 def auto_trade(username, key, secret, symbol, timeframe):
     try:
         exchange = ccxt.binance({
@@ -247,21 +247,24 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
-                    buy_order = exchange.create_order(
-                        symbol=symbol,
-                        type="LIMIT",
-                        side="buy",
-                        amount=contract,
-                        price=entry_price,
-                        params={"postOnly": True}  # post-only로 설정
-                    )
-                    buy_order_sl = exchange.create_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side="sell",
-                        amount=contract,
-                        params={'stopPrice': buy_sl}  # 로스 설정
-                    )
+                    try:
+                        buy_order = exchange.create_order(
+                            symbol=symbol,
+                            type="LIMIT",
+                            side="buy",
+                            amount=contract,
+                            price=entry_price,
+                            params={"postOnly": True}  # post-only로 설정
+                        )
+                        buy_order_sl = exchange.create_order(
+                            symbol=symbol,
+                            type="STOP_MARKET",
+                            side="sell",
+                            amount=contract,
+                            params={'stopPrice': buy_sl}  # 로스 설정
+                        )
+                    except Exception:
+                        pass
 
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
                         (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
@@ -271,21 +274,24 @@ def auto_trade(username, key, secret, symbol, timeframe):
                     contract = deposit * ratio * lev / entry_price
 
                     # 포지션 진입 요청
-                    sell_order = exchange.create_order(
-                        symbol=symbol,
-                        type="LIMIT",
-                        side="sell",
-                        amount=contract,
-                        price=entry_price,
-                        params={"postOnly": True}  # post-only로 설정
-                    )
-                    sell_order_sl = exchange.create_order(
+                    try:
+                        sell_order = exchange.create_order(
+                            symbol=symbol,
+                            type="LIMIT",
+                            side="sell",
+                            amount=contract,
+                            price=entry_price,
+                            params={"postOnly": True}  # post-only로 설정
+                        )
+                        sell_order_sl = exchange.create_order(
                         symbol=symbol,
                         type="STOP_MARKET",
                         side="buy",
                         amount=contract,
                         params={'stopPrice': sell_sl}  # 로스 설정
-                    )
+                        )
+                    except Exception:
+                        pass    
 
             elif position == 'long':
                 if df['Rsi'].iloc[-2] >= 70:
