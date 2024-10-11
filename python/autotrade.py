@@ -240,7 +240,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
             if position is None:
                 # 플래그 두개가 3틱이내에 겹치면 포지션 생성
                 if (df['RSI_Flag'].iloc[-1] == 1 or df['RSI_Flag'].iloc[-2] == 1 or df['RSI_Flag'].iloc[-3] == 1) and \
-                        (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1):
+                        (df['MACD_Flag'].iloc[-1] == 1 or df['MACD_Flag'].iloc[-2] == 1 or df['MACD_Flag'].iloc[-3] == 1) and \
+                            df['Rsi'].iloc[-2] < 70:
                     position = 'long'
                     entry_price = df['close'].iloc[-2]
                     buy_sl = entry_price * 0.975
@@ -267,7 +268,8 @@ def auto_trade(username, key, secret, symbol, timeframe):
                         pass
 
                 elif (df['RSI_Flag'].iloc[-1] == -1 or df['RSI_Flag'].iloc[-2] == -1 or df['RSI_Flag'].iloc[-3] == -1) and \
-                        (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1):
+                        (df['MACD_Flag'].iloc[-1] == -1 or df['MACD_Flag'].iloc[-2] == -1 or df['MACD_Flag'].iloc[-3] == -1) and \
+                            df['Rsi'].iloc[-2] > 30:
                     position = 'short'
                     entry_price = df['close'].iloc[-2]
                     sell_sl = entry_price * 1.025
