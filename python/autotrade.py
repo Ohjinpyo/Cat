@@ -256,13 +256,13 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             price=entry_price,
                             params={"postOnly": True}  # post-only로 설정
                         )
-                        buy_order_sl = exchange.create_order(
-                            symbol=symbol,
-                            type="STOP_MARKET",
-                            side="sell",
-                            amount=contract,
-                            params={'stopPrice': buy_sl}  # 로스 설정
-                        )
+                        # buy_order_sl = exchange.create_order(
+                        #     symbol=symbol,
+                        #     type="STOP_MARKET",
+                        #     side="sell",
+                        #     amount=contract,
+                        #     params={'stopPrice': buy_sl}  # 로스 설정
+                        # )
                     except Exception:
                         pass
 
@@ -283,13 +283,13 @@ def auto_trade(username, key, secret, symbol, timeframe):
                             price=entry_price,
                             params={"postOnly": True}  # post-only로 설정
                         )
-                        sell_order_sl = exchange.create_order(
-                        symbol=symbol,
-                        type="STOP_MARKET",
-                        side="buy",
-                        amount=contract,
-                        params={'stopPrice': sell_sl}  # 로스 설정
-                        )
+                        # sell_order_sl = exchange.create_order(
+                        # symbol=symbol,
+                        # type="STOP_MARKET",
+                        # side="buy",
+                        # amount=contract,
+                        # params={'stopPrice': sell_sl}  # 로스 설정
+                        # )
                     except Exception:
                         pass    
 
