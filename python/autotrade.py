@@ -46,6 +46,7 @@ def get_wallet():
     'options': {
         'defaultType': 'future'
     },
+    'timeout': 30000,  # 타임아웃 시간을 30초로 설정
     })
     # 지갑 받아오기
     wallet = exchange.fetch_balance()
@@ -130,7 +131,7 @@ def auto_trade(username, key, secret, symbol, timeframe):
             'defaultType': 'future'
         },
         'timeout': 30000,  # 타임아웃 시간을 30초로 설정
-         })
+        })
         
         # 모델 로드를 위한 데이터프레임
         df = fetch_and_update_data(exchange, symbol, timeframe, 60)
