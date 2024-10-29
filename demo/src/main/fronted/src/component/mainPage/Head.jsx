@@ -80,14 +80,20 @@ function Head() {
                 <NavItem to="/backtest" >백테스팅</NavItem>
                 <NavItem to="/simulated-investment">모의투자</NavItem>
                 <NavItem to="/auto-trading">자동매매</NavItem>
-                <ExternalLink href="https://www.binance.com/" target="_blank" rel="noopener noreferrer">
-                    <img src={Binance} alt="Binance"/>
-                </ExternalLink>
             </NavLinks>
             {isLoggedIn ? (
-                <Button onClick={handleLogout}>[{username}] Logout</Button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <ExternalLink href="https://www.binance.com/" target="_blank" rel="noopener noreferrer">
+                        <img src={Binance} alt="Binance"/>
+                    </ExternalLink>
+                    <NavItem to="/how-to-use">Help</NavItem>
+                    <Button onClick={handleLogout}>[{username}] Logout</Button>
+                </div>
             ) : (
                 <div style={{ display: 'flex', gap: '10px' }}>
+                    <ExternalLink href="https://www.binance.com/" target="_blank" rel="noopener noreferrer">
+                        <img src={Binance} alt="Binance"/>
+                    </ExternalLink>
                     <NavItem to="/how-to-use">Help</NavItem>
                     <NavItem to="/sign-up">Sign up</NavItem>
                     <NavItem to="/login">Login</NavItem>
