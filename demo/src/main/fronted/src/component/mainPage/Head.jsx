@@ -49,6 +49,15 @@ const ExternalLink = styled.a`
     font-size: 20px;
     text-decoration: none;
     color: black;
+    img {
+        width: 60px;
+        height: 60px;
+    }
+    span {
+        font-family: 'Arial', sans-serif;
+        font-weight: bold;
+        color: black;
+    }
 `;
 
 const Button = styled.button`
