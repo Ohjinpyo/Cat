@@ -9,6 +9,7 @@ import coinData from "./component/mainPage/coinData/CoinData";
 import BackTestPage from "./component/page/backTest/BackTestPage";
 import SimulatedInvestmentPage from "./component/page/simulatedInvestment/SimulatedInvestmentPage";
 import AutoTradingPage from "./component/page/autoTrading/AutoTradingPage";
+import HowToUsePage from "./component/page/howToUse/HowToUsePage";
 import SignUpPage from "./component/page/signUp/SignUpPage";
 import LoginPage from "./component/page/login/LoginPage";
 
