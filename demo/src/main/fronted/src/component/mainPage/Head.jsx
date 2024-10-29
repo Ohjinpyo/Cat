@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { useUser } from "../../UserContext";
 import Cat from "../image/Cat2.png"
-import HowToUse from "../image/howToUse.png"
+import Binance from "../image/binance.png"
 
 const Container = styled.div`
     display: flex;
@@ -42,6 +42,15 @@ const NavItem = styled(NavLink)`
     }
 `;
 
+const ExternalLink = styled.a`
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+    font-size: 20px;
+    text-decoration: none;
+    color: black;
+`;
+
 const Button = styled.button`
     font-size: 20px;
     text-decoration: none;
@@ -62,12 +71,15 @@ function Head() {
                 <NavItem to="/backtest" >백테스팅</NavItem>
                 <NavItem to="/simulated-investment">모의투자</NavItem>
                 <NavItem to="/auto-trading">자동매매</NavItem>
+                <ExternalLink href="https://www.binance.com/" target="_blank" rel="noopener noreferrer">
+                    <img src={Binance} alt="Binance"/>
+                </ExternalLink>
             </NavLinks>
             {isLoggedIn ? (
                 <Button onClick={handleLogout}>[{username}] Logout</Button>
             ) : (
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <NavItem to="/how-to-use"><img src={HowToUse} alt="How to use?"/></NavItem>
+                    <NavItem to="/how-to-use">Help</NavItem>
                     <NavItem to="/sign-up">Sign up</NavItem>
                     <NavItem to="/login">Login</NavItem>
                 </div>
