@@ -56,6 +56,7 @@ function App() {
                         <Route path='/backtest' element={<BackTestPage/>}/>
                         <Route path='/simulated-investment' element={<SimulatedInvestmentPage/>}/>
                         <Route path='/auto-trading' element={<AutoTradingPage/>}/>
+                        <Route path='/how-to-use' element={<HowToUsePage/>}/>
                         <Route path='/sign-up' element={<SignUpPage/>}/>
                         <Route path='/login' element={<LoginPage />}/>
                     </Routes>

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { useUser } from "../../UserContext";
 import Cat from "../image/Cat2.png"
+import HowToUse from "../image/howToUse.png"
 
 const Container = styled.div`
     display: flex;
@@ -66,6 +67,7 @@ function Head() {
                 <Button onClick={handleLogout}>[{username}] Logout</Button>
             ) : (
                 <div style={{ display: 'flex', gap: '10px' }}>
+                    <NavItem to="/how-to-use"><img src={HowToUse} alt="How to use?"/></NavItem>
                     <NavItem to="/sign-up">Sign up</NavItem>
                     <NavItem to="/login">Login</NavItem>
                 </div>
