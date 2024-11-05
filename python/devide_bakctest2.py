@@ -1,7 +1,6 @@
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
-from multiprocessing import Pool
 import os
 import sys
 import json
@@ -13,61 +12,50 @@ def isplus(number):
         return True
     elif number < 0:
         return False
+    
 
-
-# RSI 구하기
-def get_rsi_ma(df, period, ma_period):
-    df['RSI'] = ta.rsi(df['close'], length=period)
-    df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=ma_period)
-
+# 플래그 찍기
+def update_flags(df):
     df['RSI_Flag'] = 0
-    prev_value = df['RSI_Hist'].iloc[0]
-    for i in range(1, len(df)):
-        current_value = df['RSI_Hist'].iloc[i]
-        if prev_value < 0 and current_value >= 0:
-            if i >= 2:
-                df.at[i-1, 'RSI_Flag'] = 1
-            if i+2 < len(df):
-                df.at[i, 'RSI_Flag'] = 1
-                df.at[i+1, 'RSI_Flag'] = 1
-                # df.at[i+2, 'RSI_Flag'] = 1
-        elif prev_value >= 0 and current_value < 0:
-            if i >= 2:
-                df.at[i-1, 'RSI_Flag'] = -1
-            if i+2 < len(df):
-                df.at[i, 'RSI_Flag'] = -1
-                df.at[i+1, 'RSI_Flag'] = -1
-                # df.at[i+2, 'RSI_Flag'] = -1
-        prev_value = current_value
-
-    return df
-
-
-# MACD 구하기
-def get_macd(fast, slow, sig, df):
-    df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=fast, slow=slow, signal=sig).iloc[:, [0, 2, 1]]
     df['MACD_Flag'] = 0
-    prev_value = df['MACD_hist'].iloc[0]
-    for i in range(1, len(df)):
-        current_value = df['MACD_hist'].iloc[i]
-        if prev_value < 0 and current_value >= 0:
-            if i >= 2:
-                df.at[i-1, 'MACD_Flag'] = 1
-            if i+2 < len(df):
-                df.at[i, 'MACD_Flag'] = 1
-                df.at[i+1, 'MACD_Flag'] = 1
-                # df.at[i+2, 'MACD_Flag'] = 1
-        elif prev_value >= 0 and current_value < 0:
-            if i >= 2:
-                df.at[i-1, 'MACD_Flag'] = -1
-            if i+2 < len(df):
-                df.at[i, 'MACD_Flag'] = -1
-                df.at[i+1, 'MACD_Flag'] = -1
-                # df.at[i+2, 'MACD_Flag'] = -1
-        prev_value = current_value
+    for i in range(1, df.shape[0]):
+        # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
+        if df['MacdHist'].iloc[i - 1] < 0 and df['MacdHist'].iloc[i] > 0:
+            df.at[df.index[i], 'MACD_Flag'] = 1
+        elif df['MacdHist'].iloc[i - 1] > 0 and df['MacdHist'].iloc[i] < 0:
+            df.at[df.index[i], 'MACD_Flag'] = -1
+        if df['Rsi_avg'].iloc[i - 1] < 0 and df['Rsi_avg'].iloc[i] > 0:
+            df.at[df.index[i], 'RSI_Flag'] = 1
+        elif df['Rsi_avg'].iloc[i - 1] > 0 and df['Rsi_avg'].iloc[i] < 0:
+            df.at[df.index[i], 'RSI_Flag'] = -1
 
     return df
 
+
+# 데이터프레임 만들기
+def make_dataframe(df):
+    df['MovingAverage'] = ta.sma(df['close'], length=30)
+    # 가격 변동
+    df['Change'] = df['close'].diff()
+    # 상승분과 하락분
+    df['Gain'] = df['Change'].apply(lambda x: x if x > 0 else 0)
+    df['Loss'] = df['Change'].apply(lambda x: -x if x < 0 else 0)
+    # 평균 상승분과 평균 하락분 계산 (14일 기준)
+    df['Avg_Gain'] = df['Gain'].rolling(window=14, min_periods=1).mean()
+    df['Avg_Loss'] = df['Loss'].rolling(window=14, min_periods=1).mean()
+    df['RS'] = df['Avg_Gain'] / df['Avg_Loss']
+    # 지표 계산
+    df['RSI'] = ta.rsi(df['close'], length=14)
+    df[['MACD', 'MACD_signal', 'MACD_hist']] = ta.macd(df['close'], fast=12, slow=26, signal=9).iloc[:, [0, 2, 1]]
+    df['MovingAverage'] = ta.sma(df['close'], length=30)
+    df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=30)
+    df = df.dropna()
+    df['RSI_Hist'] = df['RSI'] - ta.sma(df['RSI'], length=30)
+
+    df = update_flags(df)
+
+    return df
+ 
 
 def enter(index, entryList, df, position, money, lev):
     contract = money*lev/ df['close'][index]
@@ -92,63 +80,55 @@ def chung(index, LS, entryPrice, contract, exitList, df, state, fee, money, lev)
 
 
 # 백테스트 해보기
-def backtest(data, base, fee, ratio, upSell, downSell, lev):
+def backtest(data, base, fee, ratio, lev):
     df = data
     state = 'None'  # 현재 포지션
     money = base  # 돈
-    upSell = upSell/100 + 1 # 익절 비율
-    downSell = 1 - downSell/100 # 손절 비율
     entry_list = pd.DataFrame(columns=['Type', 'Time', 'Price','Contract'])  # 엔트리 데이터프레임 만들기
     exit_list = pd.DataFrame(columns=['Time', 'Price', 'Profit', 'State', 'Money'])  # 엑시트 데이터프레임 만들기
 
     enterPrice=0
     contract=0
     # 반복문 돌려 포지션 기록
-    for i in range(0, df.shape[0]):
+    for i in range(2, df.shape[0]):
         if state == 'None': # 현재 포지션(Long or Short)이 없을 때
-            if df['MACD_Flag'][i] == 1 and df['RSI_Flag'][i] == 1:  # Long 진입
+            if (df['RSI_Flag'].iloc[i] == 1 or df['RSI_Flag'].iloc[i - 1] == 1 or df['RSI_Flag'].iloc[i - 2] == 1) and \
+                    (df['MACD_Flag'].iloc[i] == 1 or df['MACD_Flag'].iloc[i - 1] == 1 or df['MACD_Flag'].iloc[i - 2] == 1) and \
+                        df['Rsi'].iloc[-2] < 70:  # 3틱 이내 LongSignal 겹치면 Long 진입
                 state = 'Long'
-                entry_list = enter(i, entry_list, df, state, money*ratio, lev)
-                enterPrice = entry_list['Price'][entry_list.shape[0]-1]
-                contract = entry_list['Contract'][entry_list.shape[0]-1]
-            elif df['MACD_Flag'][i] == -1 and df['RSI_Flag'][i] == -1:  # Short 진입
+                entry_list = enter(i, entry_list, df, state, money * ratio, lev)
+                enterPrice = entry_list['Price'][entry_list.shape[0] - 1]
+                contract = entry_list['Contract'][entry_list.shape[0] - 1]
+            elif (df['RSI_Flag'].iloc[i] == -1 or df['RSI_Flag'].iloc[i - 1] == -1 or df['RSI_Flag'].iloc[i - 2] == -1) and \
+                    (df['MACD_Flag'].iloc[i] == -1 or df['MACD_Flag'].iloc[i - 1] == -1 or df['MACD_Flag'].iloc[i - 2] == -1) and \
+                        df['Rsi'].iloc[-2] > 30:  # 3틱 이내 ShortSignal 겹치면 Short 진입
                 state = 'Short'
-                entry_list = enter(i, entry_list, df, state, money*ratio, lev)
-                enterPrice = entry_list['Price'][entry_list.shape[0]-1]
-                contract = entry_list['Contract'][entry_list.shape[0]-1]
+                entry_list = enter(i, entry_list, df, state, money * ratio, lev)
+                enterPrice = entry_list['Price'][entry_list.shape[0] - 1]
+                contract = entry_list['Contract'][entry_list.shape[0] - 1]
         else:
             if state == 'Long': # 현재 포지션(Long or Short)이 Long 일때
-                if enterPrice*upSell <= data['close'][i]:  # Long 익절
+                if df['RSI'].iloc[i] >= 70:  # RSI 70 이상이면 Long 익절
                     check = 'icc'
                     exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
+                    money = exit_list['Money'][exit_list.shape[0] - 1]
                     state = 'None'
-                elif enterPrice*downSell >= data['close'][i]:  # Long 손절
-                    check = 'son'
-                    exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
-                    state = 'None'
-                elif enterPrice*(1-1/lev)>= data['low'][i]:  # Long 청산
+                elif enterPrice * (1 - 1/lev) >= data['low'][i]:  # Long 청산
                     check = 'chung'
                     exit_list = chung(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
+                    money = exit_list['Money'][exit_list.shape[0] - 1]
                     state = 'None'
             elif state == 'Short': # 현재 포지션(Long or Short)이 Short 일때
-                if enterPrice*upSell >= data['close'][i]:  # Short 익절
+                if df['RSI'].iloc[i] <= 30:  # RSI 30 이하이면 Short 익절
                     check = 'icc'
                     exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
+                    money = exit_list['Money'][exit_list.shape[0] - 1]
                     state = 'None'
-                elif enterPrice*downSell <= data['close'][i]:  # Short 손절
-                    check = 'son'
-                    exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
-                    state = 'None'  
-                elif  enterPrice*(1+1/lev)<= data['high'][i]:  # Short 청산
+                elif enterPrice * (1 + 1/lev) <= data['high'][i]:  # Short 청산
                     check = 'chung'
                     exit_list = chung(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
-                    money = exit_list['Money'][exit_list.shape[0]-1]
-                    state = 'None'  
+                    money = exit_list['Money'][exit_list.shape[0] - 1]
+                    state = 'None'
         
     result_data = pd.DataFrame(columns=['Type', 'EntryTime', 'EntryPrice', 'Contract',
                                         'ExitTime', 'ExitPrice', 'Profit', 'Deposit', 'State'])  # 결과 데이터프레임 만들기
@@ -216,102 +196,6 @@ def get_data(start_date, end_date):
     return data
 
 
-# 최적 지표 찾기
-def find_param_worker(args):
-    data, base, fee, ratio, p, l, lev = args
-    result = backtest(data, base, fee, ratio, p, l, lev)
-    result = result.dropna(axis=0)
-    winrate = check_winrate(result) * 100
-
-    return winrate, p, l
-
-
-def find_params(data, base, fee, ratio, lev, p_start, p_end, l_start, l_end):
-    num_cores = os.cpu_count()
-    # 각각 0~2.0% 사이에서 최적 지표 찾기
-    p_range = np.arange(p_start, p_end, 0.1)
-    l_range = np.arange(l_start, l_end, 0.1)
-
-    params_list = []
-    for p in p_range:
-        for l in l_range:
-            params_list.append((data, base, fee, ratio, p, l, lev))
-
-    with Pool(processes=num_cores) as pool:
-        tmp_datas = pool.map(find_param_worker, params_list)
-
-    top_winrate = -99999
-    top_p = 0
-    top_l = 0
-    for tmp_data in tmp_datas:
-        winrate, p, l = tmp_data
-        if winrate > top_winrate:
-            top_winrate = winrate
-            top_p = p
-            top_l = l
-
-    if top_p <= 0.15:
-        top_p = 0.15
-    if top_l <= 0.05:
-        top_l = 0.05
-        
-    detail_p_range = np.arange(top_p - 0.05, top_p + 0.05, 0.01)
-    detail_l_range = np.arange(top_l - 0.05, top_l + 0.05, 0.01)
-
-    params_list = []
-    for detail_p in detail_p_range:
-        for detail_l in detail_l_range:
-            params_list.append((data, base, fee, ratio, detail_p, detail_l, lev))
-
-    with Pool(processes=num_cores) as pool:
-        last_datas = pool.map(find_param_worker, params_list)
-
-    top_winrate = -99999
-    detail_p = 0
-    detail_l = 0
-    for last_data in last_datas:
-        winrate, p, l = last_data
-        if winrate > top_winrate:
-            top_winrate = winrate
-            detail_p = p
-            detail_l = l
-
-    return detail_p, detail_l
-
-
-# 쪼개서 백테스팅
-def devide_backtest(base, fee, ratio,dataframe, devide, lev, p_start, p_end, l_start, l_end):
-    data = dataframe
-    money = base
-    final_result = pd.DataFrame(columns=['Type', 'EntryTime', 'EntryPrice', 'Contract', 
-                                         'ExitTime', 'ExitPrice', 'Profit', 'Deposit', 'State'])
-
-    # 쪼갠 일자 분으로 변환
-    devide_standard = devide * 24 * 4
-    while(data.shape[0] > devide_standard):
-        # 데이터 크기가 쪼개기보다 크면 쪼개기
-        if data.shape[0] > devide_standard:
-            sep_data = data.loc[0:devide_standard - 1]
-            data.drop(labels=range(0, devide_standard), inplace=True)
-            data = data.reset_index(drop=True)
-        # 데이터 크기가 쪼개기보다 작으면 쪼개지 않기
-        else:
-            sep_data = data
-
-        # 데이터 최적 승률 찾기
-        p, l = find_params(sep_data, money, fee, ratio, lev, p_start, p_end, l_start, l_end)
-        # print(p, l)
-        # 찾은 승률로 백테스트(다음 데이터로)
-        test_data = data.loc[0:devide_standard - 1]
-        result_data = backtest(test_data, money, fee, ratio, p, l, lev)
-        result_data = result_data.dropna(axis=0)
-        
-        # 자본금 최신화
-        money = result_data['Deposit'][result_data.shape[0] - 1]
-        final_result = pd.concat([final_result, result_data])
-    
-    return final_result
-
 # MySQL 데이터베이스 연결 설정
 user = 'root'
 password = 'Cat2024!!'
@@ -351,22 +235,11 @@ if __name__ == "__main__":
     # p_end = float(sys.argv[7])
     # l_start = float(sys.argv[8])
     # l_end = float(sys.argv[9])
-    p_start = 0.100
-    p_end = 2.000
-    l_start = 0.100
-    l_end = 1.000
-
-    fast = 12
-    slow = 26
-    sig = 9
-    per = 14
-    m_per = 50
     f = 0.02
-    d = 10
+
     df = get_data(start, end)
-    df = get_macd(fast, slow, sig, df)
-    df = get_rsi_ma(df, per, m_per)
-    result = devide_backtest(b, f, r, df, d, l, p_start, p_end, l_start, l_end)
+    df = make_dataframe(df)
+    result = backtest(df, b, f, r, l)
     result = result.reset_index()
     
     save_to_database(result, 'trade')
