@@ -20,13 +20,13 @@ def update_flags(df):
     df['MACD_Flag'] = 0
     for i in range(1, df.shape[0]):
         # RSI, MACD의 부호가 바뀌면 플래그를 찍음(음->양 1, 양->음 -1)
-        if df['MacdHist'].iloc[i - 1] < 0 and df['MacdHist'].iloc[i] > 0:
+        if df['MACD_hist'].iloc[i - 1] < 0 and df['MACD_hist'].iloc[i] > 0:
             df.at[df.index[i], 'MACD_Flag'] = 1
-        elif df['MacdHist'].iloc[i - 1] > 0 and df['MacdHist'].iloc[i] < 0:
+        elif df['MACD_hist'].iloc[i - 1] > 0 and df['MACD_hist'].iloc[i] < 0:
             df.at[df.index[i], 'MACD_Flag'] = -1
-        if df['Rsi_avg'].iloc[i - 1] < 0 and df['Rsi_avg'].iloc[i] > 0:
+        if df['RSI_Hist'].iloc[i - 1] < 0 and df['RSI_Hist'].iloc[i] > 0:
             df.at[df.index[i], 'RSI_Flag'] = 1
-        elif df['Rsi_avg'].iloc[i - 1] > 0 and df['Rsi_avg'].iloc[i] < 0:
+        elif df['RSI_Hist'].iloc[i - 1] > 0 and df['RSI_Hist'].iloc[i] < 0:
             df.at[df.index[i], 'RSI_Flag'] = -1
 
     return df
@@ -58,24 +58,24 @@ def make_dataframe(df):
  
 
 def enter(index, entryList, df, position, money, lev):
-    contract = money*lev/ df['close'][index]
-    entryList.loc[entryList.shape[0]] = [position, df['datetime'][index], df['close'][index], contract]
+    contract = money*lev/ df['close'].iloc[index]
+    entryList.loc[entryList.shape[0]] = [position, df['datetime'].iloc[index], df['close'].iloc[index], contract]
     return entryList
 
 
 def exit(index, LS, entryPrice, contract, exitList, df, state, fee, money, lev):
     if(LS=='Long'):
-      profit = ((1-fee/100)*df['close'][index]-(1+fee/100)*entryPrice)*contract
+      profit = ((1-fee/100)*df['close'].iloc[index]-(1+fee/100)*entryPrice)*contract
     else:
-      profit = ((1-fee/100)*entryPrice-(1+fee/100)*df['close'][index])*contract 
+      profit = ((1-fee/100)*entryPrice-(1+fee/100)*df['close'].iloc[index])*contract 
         
-    exitList.loc[exitList.shape[0]] = [df['datetime'][index], df['close'][index], profit, state, money+profit] 
+    exitList.loc[exitList.shape[0]] = [df['datetime'].iloc[index], df['close'].iloc[index], profit, state, money+profit] 
     return exitList
 
 
 def chung(index, LS, entryPrice, contract, exitList, df, state, fee, money, lev):
-    profit = -1*entryPrice*contract/lev-(df['close'][index]+entryPrice)*contract*fee/100
-    exitList.loc[exitList.shape[0]] = [df['datetime'][index], df['close'][index], profit, state, money+profit] 
+    profit = -1*entryPrice*contract/lev-(df['close'].iloc[index]+entryPrice)*contract*fee/100
+    exitList.loc[exitList.shape[0]] = [df['datetime'].iloc[index], df['close'].iloc[index], profit, state, money+profit] 
     return exitList
 
 
@@ -90,18 +90,18 @@ def backtest(data, base, fee, ratio, lev):
     enterPrice=0
     contract=0
     # 반복문 돌려 포지션 기록
-    for i in range(2, df.shape[0]):
+    for i in range(2, df.shape[0] - 1):
         if state == 'None': # 현재 포지션(Long or Short)이 없을 때
             if (df['RSI_Flag'].iloc[i] == 1 or df['RSI_Flag'].iloc[i - 1] == 1 or df['RSI_Flag'].iloc[i - 2] == 1) and \
                     (df['MACD_Flag'].iloc[i] == 1 or df['MACD_Flag'].iloc[i - 1] == 1 or df['MACD_Flag'].iloc[i - 2] == 1) and \
-                        df['Rsi'].iloc[-2] < 70:  # 3틱 이내 LongSignal 겹치면 Long 진입
+                        df['RSI'].iloc[i] < 70:  # 3틱 이내 LongSignal 겹치면 Long 진입
                 state = 'Long'
                 entry_list = enter(i, entry_list, df, state, money * ratio, lev)
                 enterPrice = entry_list['Price'][entry_list.shape[0] - 1]
                 contract = entry_list['Contract'][entry_list.shape[0] - 1]
             elif (df['RSI_Flag'].iloc[i] == -1 or df['RSI_Flag'].iloc[i - 1] == -1 or df['RSI_Flag'].iloc[i - 2] == -1) and \
                     (df['MACD_Flag'].iloc[i] == -1 or df['MACD_Flag'].iloc[i - 1] == -1 or df['MACD_Flag'].iloc[i - 2] == -1) and \
-                        df['Rsi'].iloc[-2] > 30:  # 3틱 이내 ShortSignal 겹치면 Short 진입
+                        df['RSI'].iloc[i] > 30:  # 3틱 이내 ShortSignal 겹치면 Short 진입
                 state = 'Short'
                 entry_list = enter(i, entry_list, df, state, money * ratio, lev)
                 enterPrice = entry_list['Price'][entry_list.shape[0] - 1]
@@ -113,7 +113,7 @@ def backtest(data, base, fee, ratio, lev):
                     exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
                     money = exit_list['Money'][exit_list.shape[0] - 1]
                     state = 'None'
-                elif enterPrice * (1 - 1/lev) >= data['low'][i]:  # Long 청산
+                elif enterPrice * (1 - 1/lev) >= data['low'].iloc[i]:  # Long 청산
                     check = 'chung'
                     exit_list = chung(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
                     money = exit_list['Money'][exit_list.shape[0] - 1]
@@ -124,7 +124,7 @@ def backtest(data, base, fee, ratio, lev):
                     exit_list = exit(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
                     money = exit_list['Money'][exit_list.shape[0] - 1]
                     state = 'None'
-                elif enterPrice * (1 + 1/lev) <= data['high'][i]:  # Short 청산
+                elif enterPrice * (1 + 1/lev) <= data['high'].iloc[i]:  # Short 청산
                     check = 'chung'
                     exit_list = chung(i, state, enterPrice, contract, exit_list, df, check, fee, money, lev)
                     money = exit_list['Money'][exit_list.shape[0] - 1]
@@ -221,7 +221,7 @@ def save_to_database(df, table_name):
 if __name__ == "__main__":
 
     # start = '2020-01-01'
-    # end = '2020-02-01'
+    # end = '2020-01-13'
     # b = 1000000
     # r = 0.3
     # l = 10
@@ -239,11 +239,13 @@ if __name__ == "__main__":
 
     df = get_data(start, end)
     df = make_dataframe(df)
+    # df.to_csv('Tmp.csv')
     result = backtest(df, b, f, r, l)
     result = result.reset_index()
+    result = result.dropna()
     
     save_to_database(result, 'trade')
-    # result.to_csv('C:/Users/jinpyo/IdeaProjects/demo/src/main/fronted/public/data/Result.csv')
+    # result.to_csv('Result.csv')
 
     last_index = result.shape[0] - 1
     profit = result['Deposit'][last_index] - b
