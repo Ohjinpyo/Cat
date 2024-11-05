@@ -9,6 +9,7 @@ import coinData from "./component/mainPage/coinData/CoinData";
 import BackTestPage from "./component/page/backTest/BackTestPage";
 import SimulatedInvestmentPage from "./component/page/simulatedInvestment/SimulatedInvestmentPage";
 import AutoTradingPage from "./component/page/autoTrading/AutoTradingPage";
+import HowToUsePage from "./component/page/howToUse/HowToUsePage";
 import SignUpPage from "./component/page/signUp/SignUpPage";
 import LoginPage from "./component/page/login/LoginPage";
 
@@ -56,6 +57,7 @@ function App() {
                         <Route path='/backtest' element={<BackTestPage/>}/>
                         <Route path='/simulated-investment' element={<SimulatedInvestmentPage/>}/>
                         <Route path='/auto-trading' element={<AutoTradingPage/>}/>
+                        <Route path='/how-to-use' element={<HowToUsePage/>}/>
                         <Route path='/sign-up' element={<SignUpPage/>}/>
                         <Route path='/login' element={<LoginPage />}/>
                     </Routes>
