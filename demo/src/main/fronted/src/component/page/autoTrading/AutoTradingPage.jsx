@@ -99,6 +99,7 @@ function AutoTradingPage() {
     const [lossStart, setLossStart] = useState(0.1);
     const [lossEnd, setLossEnd] = useState(1.0);
     const [showModal, setShowModal] = useState(false);
+    const [condition, setCondition] = useState(0);
     const {username} = useUser();
 
     const handleStrategyChange = (e) => {
@@ -145,6 +146,21 @@ function AutoTradingPage() {
         setShowModal(false);
     };
 
+    useEffect(() => {
+        if (username !== "") {
+            axios.post("http://3.35.65.112:8080/api/getcondition", {
+                username: username
+            })
+                .then(response => {
+                    console.log("GET 요청 성공:", response.data);
+                    setCondition(response.data[0]);
+                })
+                .catch(error => {
+                    console.error("GET 요청 실패:", error);
+                });
+        }
+    }, []);
+
 
     return (
         <div>
@@ -157,6 +173,7 @@ function AutoTradingPage() {
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
+                    <div>상태 : {condition}</div>
                 </ButtonContainer>
             </ExeContainer>
             <Overlay show={showModal} onClick={handleCloseModal} />

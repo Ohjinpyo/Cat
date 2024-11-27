@@ -21,4 +21,10 @@ public class SimulatedInvestmentService {
         Query query = entityManager.createNativeQuery(sql, SimulatedInvestment.class);
         return query.getResultList();
     }
+
+    public List<String> getAtColumnByUsername(String name) {
+        String sql = "SELECT at FROM User WHERE username = " + name;
+        Query query = entityManager.createNativeQuery(sql);
+        return query.getResultList();
+    }
 }

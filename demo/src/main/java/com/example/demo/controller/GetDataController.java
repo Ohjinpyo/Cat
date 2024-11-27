@@ -20,4 +20,10 @@ public class GetDataController {
         String strategy = request.getStrategy();
         return simulatedInvestmentService.getSimulatedInvestmentLog(username, strategy);
     }
+
+    @PostMapping("/api/getcondition")
+    public List<String> getAtColumnByUsername(@RequestBody RequestName request) {
+        String username = request.getUsername();
+        return simulatedInvestmentService.getAtColumnByUsername(username);
+    }
 }
