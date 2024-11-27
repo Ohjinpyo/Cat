@@ -23,7 +23,7 @@ public class GetDataController {
     }
 
     @PostMapping("/api/getcondition")
-    public List<Object> getAtColumnByUsername(@RequestBody RequestName request) {
+    public List<Boolean> getAtColumnByUsername(@RequestBody RequestName request) {
         String username = request.getUsername();
         return simulatedInvestmentService.getAtColumnByUsername(username);
     }

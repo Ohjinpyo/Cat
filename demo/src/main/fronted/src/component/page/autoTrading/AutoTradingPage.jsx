@@ -99,7 +99,7 @@ function AutoTradingPage() {
     const [lossStart, setLossStart] = useState(0.1);
     const [lossEnd, setLossEnd] = useState(1.0);
     const [showModal, setShowModal] = useState(false);
-    const [condition, setCondition] = useState(0);
+    const [condition, setCondition] = useState(false);
     const {username} = useUser();
 
     const handleStrategyChange = (e) => {
