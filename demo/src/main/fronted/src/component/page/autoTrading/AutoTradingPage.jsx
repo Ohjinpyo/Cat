@@ -181,11 +181,9 @@ function AutoTradingPage() {
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
                     {condition ? (
-                        <div style={{color: red}}>
-
-                        </div>
+                        <div style="color : green">ON</div>
                     ) : (
-
+                        <div style="color : red">OFF</div>
                     )
                     }
                 </ButtonContainer>
