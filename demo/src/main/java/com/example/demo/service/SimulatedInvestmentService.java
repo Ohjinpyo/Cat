@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.BinanceData;
 import com.example.demo.model.SimulatedInvestment;
+import com.example.demo.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class SimulatedInvestmentService {
 
     public List<String> getAtColumnByUsername(String name) {
         String sql = "SELECT at FROM User WHERE username = " + "\'"+name+"\'";
-        Query query = entityManager.createNativeQuery(sql);
+        Query query = entityManager.createNativeQuery(sql, User.class);
         return query.getResultList();
     }
 }
