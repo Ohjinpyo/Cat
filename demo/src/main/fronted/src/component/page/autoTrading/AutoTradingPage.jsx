@@ -178,7 +178,7 @@ function AutoTradingPage() {
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
-                    <div>상태 : {condition}</div>
+                    <div>상태 : {condition ? 1 : 0} </div>
                 </ButtonContainer>
             </ExeContainer>
             <Overlay show={showModal} onClick={handleCloseModal} />
