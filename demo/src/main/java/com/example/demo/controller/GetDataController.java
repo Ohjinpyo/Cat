@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.SimulatedInvestment;
 import com.example.demo.model.RequestName;
+import com.example.demo.model.User;
 import com.example.demo.service.SimulatedInvestmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
