@@ -9,9 +9,10 @@ import CAT2_GRAY from '../../image/Cat2_gray.png';
 
 const ImageContainer = styled.div`
     width: 100%;
-    height: 300px;
+    height: 200px;
     display: flex;
     align-items: center;
+    justify-content: center;
     margin-top: 20px;
     border-top: 1px solid black;
     img{
