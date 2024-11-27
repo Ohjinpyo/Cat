@@ -26,6 +26,7 @@ const ExeContainer = styled.div`
     flex-direction: column;
     align-items: center;
     margin-top: 20px;
+    border-top: 1px solid black;
 `;
 
 const ButtonContainer = styled.div`
