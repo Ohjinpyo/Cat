@@ -123,8 +123,7 @@ function AutoTradingPage() {
             .catch(error => {
                 console.error("POST 요청 실패:", error);
             });
-        setTimeout(() => {}, 5000);
-        getCondition();
+        setTimeout(() => {getCondition();}, 1000);
     };
 
     const handleExit = () => {
@@ -138,8 +137,7 @@ function AutoTradingPage() {
             .catch(error => {
                 console.error("POST 요청 실패:", error);
             });
-        setTimeout(() => {}, 5000);
-        getCondition()
+        setTimeout(() => {getCondition();}, 1000);
     };
 
     const handleOpenModal = () => {
@@ -151,7 +149,7 @@ function AutoTradingPage() {
     };
 
     const getCondition = () => {
-        setTimeout(() => {}, 1000);
+
         if (username !== "") {
             axios.post("http://3.35.65.112:8080/api/getcondition", {
                 username: username
