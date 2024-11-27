@@ -23,7 +23,7 @@ public class SimulatedInvestmentService {
     }
 
     public List<String> getAtColumnByUsername(String name) {
-        String sql = "SELECT at FROM User WHERE username = " + name;
+        String sql = "SELECT at FROM User WHERE username = " + "\'"+name+"\'";
         Query query = entityManager.createNativeQuery(sql);
         return query.getResultList();
     }
