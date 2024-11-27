@@ -3,6 +3,22 @@ import Chart from "../../mainPage/Chart";
 import styled from "styled-components";
 import axios from "axios";
 import {UserContext, useUser} from '../../../UserContext';
+import CAT2 from '../../image/Cat2.png';
+import CAT2_GRAY from '../../image/Cat2_gray.png';
+
+
+const ImageContainer = styled.div`
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    border-top: 1px solid black;
+    img{
+        max-width: 100%;
+        max-height: 100%;
+    }
+`;
 
 const ExeContainer = styled.div`
     width: 100%;
@@ -172,6 +188,14 @@ function AutoTradingPage() {
     return (
         <div>
             {/*<Chart />*/}
+            <ImageContainer>
+                {condition ? (
+                    <img src={CAT2} alt={"ON"}/>
+                ):(
+                    <img src={CAT2_GRAY} alt={"OFF"}/>
+                )
+                }
+            </ImageContainer>
             <ExeContainer>
                 <ButtonContainer>
                     <StrategySelect value={selectedStrategy} onChange={handleStrategyChange}>
@@ -180,12 +204,6 @@ function AutoTradingPage() {
                     <ExecuteButton onClick={handleExecute}>실행</ExecuteButton>
                     <ExitButton onClick={handleExit}>종료</ExitButton>
                     <PropertiesButton onClick={handleOpenModal}>속성</PropertiesButton>
-                    {condition ? (
-                        <div style={{color : "green"}}>ON</div>
-                    ) : (
-                        <div style={{color : "red"}}>OFF</div>
-                    )
-                    }
                 </ButtonContainer>
             </ExeContainer>
             <Overlay show={showModal} onClick={handleCloseModal} />
