@@ -123,7 +123,7 @@ function AutoTradingPage() {
             .catch(error => {
                 console.error("POST 요청 실패:", error);
             });
-        setTimeout(() => {}, 1000);
+        setTimeout(() => {}, 5000);
         getCondition();
     };
 
@@ -138,7 +138,7 @@ function AutoTradingPage() {
             .catch(error => {
                 console.error("POST 요청 실패:", error);
             });
-        setTimeout(() => {}, 1000);
+        setTimeout(() => {}, 5000);
         getCondition()
     };
 
