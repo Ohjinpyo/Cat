@@ -38,14 +38,14 @@ Coin AI Trader - 웹페이지를 통해 코인 투자 관련 여러 기능들을
   - 객관적 투자
     - 기존 주식시장보다 변동성이 더욱 강한 암호화폐 시장에서 감정을 억누르고 객관적으로 투자한다는 것은 어려운 일이다. 프로그램을 통한 자동매매 시스템은 감정을 배제하고 철저하게 데이터를 기반으로 한 매매를 수행하기 때문에 투자의 일관성, 정확성을 보장한다.
 
-## 시연영상
-https://youtu.be/lGs7OCejPG0
 
 ## 구조
 <div align=center><img src="project_structure.png" height=500></div>
 <div align=center><img src="project_flowchart.png" height=500></div>
 
-
+## 시연영상
+https://youtu.be/lGs7OCejPG0
+<div align=center><img src="home.png" height=500></div>
 
 ## 사용
 1. 웹사이트 접속 - http://coinaitrader.site/  (현재 서버 중지중)
