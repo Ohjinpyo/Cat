@@ -4,9 +4,9 @@ Coin AI Trader - 웹페이지를 통해 코인 투자 관련 여러 기능들을
 <div align=center><img src="coiincat.png" height=300></div>
 
 **팀 구성**
-- 20191748 이지헌
-- 20191738 오진표
-- 20191795 한준서
+- 20191748 이지헌 : AI, 프론트엔드 담당
+- 20191738 오진표 : 프론트엔드, 백엔드 담당
+- 20191795 한준서 : Python, 서버 담당
   - ### 기술스택
     - Deploy
       - <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
