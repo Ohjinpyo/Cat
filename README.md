@@ -48,7 +48,7 @@ https://youtu.be/lGs7OCejPG0
 
 
 ## 사용
-1. 웹사이트 접속 http://3.35.17.231:3000/
+1. 웹사이트 접속 - http://coinaitrader.site/  (현재 서버 중지중)
 2. 회원가입, 로그인
    <div align=center><img src="signup.png" height=500></div>
 3. 투자 기능 사용  
